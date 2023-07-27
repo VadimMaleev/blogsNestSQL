@@ -75,13 +75,14 @@ export class UsersRepository {
     newPasswordHash: string,
     userId: string,
   ): Promise<boolean> {
-    const userInstance: UserDocument = await this.userModel.findOne({
-      id: userId,
-    });
-    if (!userInstance) return false;
-
-    userInstance.updatePasswordHash(newPasswordHash);
-    await userInstance.save();
+    await this.dataSource.query(
+      `
+        UPDATE public."Users"
+        SET  "passwordHash" = $1, 
+        WHERE "id" = $2
+        `,
+      [newPasswordHash, userId],
+    );
     return true;
   }
 
@@ -97,5 +98,17 @@ export class UsersRepository {
 
     await user.save();
     return true;
+  }
+
+  async findUserById(id: string) {
+    const user = await this.dataSource.query(
+      `
+    SELECT "id", "login", "email", "passwordHash", "createdAt", "confirmationCode", "codeExpirationDate", "isConfirmed", "isBanned", "banDate", "banReason"
+    FROM public."Users"
+    WHERE "id" = $1
+    `,
+      [id],
+    );
+    return user[0];
   }
 }

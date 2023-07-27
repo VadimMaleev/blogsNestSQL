@@ -30,9 +30,9 @@ export class NewPasswordUseCase {
     await this.recoveryCodeRepository.deleteCode(
       command.inputModel.recoveryCode,
     );
-    return await this.usersRepository.updatePassword(
-      newPasswordHash,
-      code.userId,
-    );
+
+    const user = await this.usersRepository.findUserById(code.userId);
+    if (!user) return false;
+    return await this.usersRepository.updatePassword(newPasswordHash, user.id);
   }
 }
