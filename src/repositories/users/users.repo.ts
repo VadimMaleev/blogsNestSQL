@@ -3,13 +3,36 @@ import { Model } from 'mongoose';
 import { User, UserDocument } from './users.schema';
 import { CreateUserDto } from '../../types/dto';
 import { Injectable } from '@nestjs/common';
+import { DataSource } from 'typeorm';
+import { InjectDataSource } from '@nestjs/typeorm';
 
 @Injectable()
 export class UsersRepository {
-  constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {}
+  constructor(
+    @InjectModel(User.name) private userModel: Model<UserDocument>,
+    @InjectDataSource() protected dataSource: DataSource,
+  ) {}
 
   async createUser(newUser: CreateUserDto) {
-    await new this.userModel(newUser).save();
+    await this.dataSource.query(
+      `
+        INSERT INTO public."Users"(
+        "id", "login", "email", "passwordHash", "createdAt", "confirmationCode", "codeExpirationDate", "isConfirmed", "isBanned", "banDate", "banReason")
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11);`,
+      [
+        newUser.id,
+        newUser.login,
+        newUser.email,
+        newUser.passwordHash,
+        newUser.createdAt,
+        newUser.confirmationCode,
+        newUser.codeExpirationDate,
+        newUser.isConfirmed,
+        newUser.isBanned,
+        newUser.banDate,
+        newUser.banReason,
+      ],
+    );
   }
 
   async deleteUser(id: string): Promise<boolean> {

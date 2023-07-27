@@ -5,10 +5,15 @@ import { Model } from 'mongoose';
 import { UsersForResponse, UsersPaginationResponse } from '../../types/types';
 import { Injectable } from '@nestjs/common';
 import { mapUsersForResponse } from '../../helpers/map.users.for.response';
+import { DataSource } from 'typeorm';
+import { InjectDataSource } from '@nestjs/typeorm';
 
 @Injectable()
 export class UsersQueryRepository {
-  constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {}
+  constructor(
+    @InjectModel(User.name) private userModel: Model<UserDocument>,
+    @InjectDataSource() protected dataSource: DataSource,
+  ) {}
   async getUsers(query: UsersQueryDto): Promise<UsersPaginationResponse> {
     const pageNumber: number = Number(query.pageNumber) || 1;
     const pageSize: number = Number(query.pageSize) || 10;
@@ -58,11 +63,27 @@ export class UsersQueryRepository {
   }
 
   async findUserByEmail(email: string) {
-    return this.userModel.findOne({ email: email });
+    const user = await this.dataSource.query(
+      `
+    SELECT "id", "login", "email", "passwordHash", "createdAt", "confirmationCode", "codeExpirationDate", "isConfirmed", "isBanned", "banDate", "banReason"
+    FROM public."Users"
+    WHERE "email" = $1
+    `,
+      [email],
+    );
+    return user[0];
   }
 
   async findUserByLogin(login: string) {
-    return this.userModel.findOne({ login: login });
+    const user = await this.dataSource.query(
+      `
+    SELECT "id", "login", "email", "passwordHash", "createdAt", "confirmationCode", "codeExpirationDate", "isConfirmed", "isBanned", "banDate", "banReason"
+    FROM public."Users"
+    WHERE "login" = $1
+    `,
+      [login],
+    );
+    return user[0];
   }
 
   async findUserByCode(code: string) {

@@ -59,6 +59,7 @@ import {
 } from './repositories/users/banned.users.for.blog.schema';
 import { BloggersUsersController } from './api/bloggers.api/users/bloggers.users.controller';
 import { BannedUsersForBlogRepository } from './repositories/users/banned.users.for.blog.repo';
+import { TypeOrmModule } from '@nestjs/typeorm';
 
 const useCases = [
   CheckCredentialsUseCase,
@@ -70,9 +71,19 @@ const useCases = [
 
 @Module({
   imports: [
+    TypeOrmModule.forRoot({
+      type: 'postgres',
+      host: 'localhost',
+      port: 5434,
+      username: 'postgres',
+      password: 'admin',
+      database: 'blogs',
+      autoLoadEntities: false,
+      synchronize: false,
+    }),
     CqrsModule,
     ConfigModule.forRoot(),
-    MongooseModule.forRoot(process.env.mongooseUri),
+    MongooseModule.forRoot(process.env.test),
     ThrottlerModule.forRoot({
       // ttl: 10,
       // limit: 5,
