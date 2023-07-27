@@ -99,9 +99,15 @@ export class UsersQueryRepository {
   }
 
   async findUserByLoginOrEmail(loginOrEmail: string) {
-    return this.userModel.findOne({
-      $or: [{ login: loginOrEmail }, { email: loginOrEmail }],
-    });
+    const user = await this.dataSource.query(
+      `
+    SELECT "id", "login", "email", "passwordHash", "createdAt", "confirmationCode", "codeExpirationDate", "isConfirmed", "isBanned", "banDate", "banReason"
+    FROM public."Users"
+    WHERE "login" = $1 OR "email" = $1
+    `,
+      [loginOrEmail],
+    );
+    return user[0];
   }
 
   async findUserById(id: string): Promise<UserDocument> {
