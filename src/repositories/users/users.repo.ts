@@ -43,13 +43,14 @@ export class UsersRepository {
   }
 
   async updateConfirmation(id: string) {
-    const confirmationInstance: UserDocument = await this.userModel.findOne({
-      id: id,
-    });
-    if (!confirmationInstance) return false;
-    confirmationInstance.isConfirmed = true;
-
-    await confirmationInstance.save();
+    await this.dataSource.query(
+      `
+        UPDATE public."Users"
+        SET  "isConfirmed" = true
+        WHERE "id" = $1
+        `,
+      [id],
+    );
     return true;
   }
 
@@ -58,13 +59,15 @@ export class UsersRepository {
     confirmCode: string,
     expirationDate: Date,
   ) {
-    const confirmationInstance: UserDocument = await this.userModel.findOne({
-      id: userId,
-    });
-    if (!confirmationInstance) return null;
-
-    confirmationInstance.updateConfirmationCode(confirmCode, expirationDate);
-    await confirmationInstance.save();
+    await this.dataSource.query(
+      `
+        UPDATE public."Users"
+        SET  "confirmationCode" = $1, 
+             "codeExpirationDate" = $2
+        WHERE "id" = $3
+        `,
+      [confirmCode, expirationDate, userId],
+    );
     return true;
   }
 

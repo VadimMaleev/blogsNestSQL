@@ -87,7 +87,15 @@ export class UsersQueryRepository {
   }
 
   async findUserByCode(code: string) {
-    return this.userModel.findOne({ confirmationCode: code });
+    const user = await this.dataSource.query(
+      `
+    SELECT "id", "login", "email", "passwordHash", "createdAt", "confirmationCode", "codeExpirationDate", "isConfirmed", "isBanned", "banDate", "banReason"
+    FROM public."Users"
+    WHERE "confirmationCode" = $1
+    `,
+      [code],
+    );
+    return user[0];
   }
 
   async findUserByLoginOrEmail(loginOrEmail: string) {

@@ -77,7 +77,6 @@ export class UsersService {
     if (user.isConfirmed) return false;
     if (user.confirmationCode !== code) return false;
     if (user.codeExpirationDate < new Date()) return false;
-
     return await this.usersRepository.updateConfirmation(user.id);
   }
 
