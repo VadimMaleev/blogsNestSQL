@@ -1,19 +1,18 @@
 import { Injectable } from '@nestjs/common';
-import { UserDocument } from '../users/users.schema';
 import jwt from 'jsonwebtoken';
 import { settings } from '../../settings/settings';
 
 @Injectable()
 export class JWTService {
-  async createJWT(user: UserDocument) {
-    return jwt.sign({ userId: user.id }, settings.JWT_SECRET, {
+  async createJWT(userId: string) {
+    return jwt.sign({ userId: userId }, settings.JWT_SECRET, {
       expiresIn: '10m',
     });
   }
 
-  async createRefreshJWT(user: UserDocument, deviceId: string) {
+  async createRefreshJWT(userId: string, deviceId: string) {
     return jwt.sign(
-      { userId: user.id, deviceId: deviceId },
+      { userId: userId, deviceId: deviceId },
       settings.JWT_SECRET,
       { expiresIn: '20m' },
     );

@@ -1,12 +1,11 @@
 import * as bcrypt from 'bcrypt';
 import { Injectable } from '@nestjs/common';
 import { CreateDeviceDto } from '../../types/dto';
-import { UserDocument } from '../../repositories/users/users.schema';
 import { JWTService } from '../../repositories/jwt/jwt.service';
-import { randomUUID } from 'crypto';
 import { DevicesRepository } from '../../repositories/devices/devices.repository';
 import { DevicesQueryRepository } from '../../repositories/devices/devices.query.repository';
 import { JwtRepository } from '../../repositories/jwt/jwt.repository';
+import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class AuthService {
@@ -21,13 +20,16 @@ export class AuthService {
     return await bcrypt.hash(password, 10);
   }
 
-  async createToken(user: UserDocument) {
-    return this.jwtService.createJWT(user);
+  async createToken(userId: string) {
+    return this.jwtService.createJWT(userId);
   }
 
-  async createRefreshToken(user: UserDocument, ip: string, deviceName: string) {
-    const deviceId = randomUUID();
-    const refreshToken = await this.jwtService.createRefreshJWT(user, deviceId);
+  async createRefreshToken(userId: string, ip: string, deviceName: string) {
+    const deviceId = uuidv4();
+    const refreshToken = await this.jwtService.createRefreshJWT(
+      userId,
+      deviceId,
+    );
     const lastActiveDate =
       this.jwtService.getLastActiveDateFromRefreshToken(refreshToken);
 
@@ -36,27 +38,29 @@ export class AuthService {
       deviceName,
       lastActiveDate,
       deviceId,
-      user.id,
+      userId,
     );
     await this.devicesRepository.createDevice(device);
     return refreshToken;
   }
 
-  async refreshToken(user: UserDocument, oldRefreshToken: string) {
+  async refreshToken(userId: string, oldRefreshToken: string) {
     const jwtPayload = await this.jwtService.extractPayloadFromToken(
       oldRefreshToken,
     );
-    const userId = user.id;
     const deviceId = jwtPayload.deviceId;
     const lastActiveDate = new Date(jwtPayload.iat * 1000).toISOString();
     const device =
-      await this.devicesQueryRepository.findDeviceByDeviceAndUserIdAndDate(
+      await this.devicesQueryRepository.findDeviceByDeviceIdAndUserIdAndDate(
         deviceId,
         userId,
         lastActiveDate,
       );
     if (!device) return null;
-    const refreshToken = await this.jwtService.createRefreshJWT(user, deviceId);
+    const refreshToken = await this.jwtService.createRefreshJWT(
+      userId,
+      deviceId,
+    );
     const newLastActiveDate =
       this.jwtService.getLastActiveDateFromRefreshToken(refreshToken);
     const isDateUpdated =

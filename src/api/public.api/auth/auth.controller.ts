@@ -116,9 +116,9 @@ export class AuthController {
     );
     if (!user) throw new UnauthorizedException();
     if (user.isBanned === true) throw new UnauthorizedException();
-    const accessToken = await this.authService.createToken(user);
+    const accessToken = await this.authService.createToken(user.id);
     const refreshToken = await this.authService.createRefreshToken(
-      user,
+      user.id,
       req.ip,
       req.headers['user-agent'],
     );
@@ -164,9 +164,9 @@ export class AuthController {
   async refreshToken(@Request() req, @Res({ passthrough: true }) res) {
     const user = req.user;
     const oldRefreshToken = req.cookies.refreshToken;
-    const accessToken = await this.authService.createToken(user);
+    const accessToken = await this.authService.createToken(user.id);
     const refreshToken = await this.authService.refreshToken(
-      user,
+      user.id,
       oldRefreshToken,
     );
     if (!refreshToken) throw new UnauthorizedException();

@@ -4,15 +4,16 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
-import { UsersQueryRepository } from '../repositories/users/users.query.repo';
+
 import { JWTService } from '../repositories/jwt/jwt.service';
 import { Request } from 'express';
 import { JwtRepository } from '../repositories/jwt/jwt.repository';
+import { UsersRepository } from '../repositories/users/users.repo';
 
 @Injectable()
 export class JwtRefreshAuthGuard implements CanActivate {
   constructor(
-    protected usersQueryRepository: UsersQueryRepository,
+    protected usersRepository: UsersRepository,
     protected jwtService: JWTService,
     protected jwtRepository: JwtRepository,
   ) {}
@@ -31,7 +32,7 @@ export class JwtRefreshAuthGuard implements CanActivate {
       refreshTokenFromCookie,
     );
     if (refreshTokenIsBlack) throw new UnauthorizedException();
-    const user = await this.usersQueryRepository.findUserById(payload.userId);
+    const user = await this.usersRepository.findUserById(payload.userId);
     if (!user) throw new UnauthorizedException();
     req.user = user;
     return true;

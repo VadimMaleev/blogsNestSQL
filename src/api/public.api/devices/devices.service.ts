@@ -18,7 +18,7 @@ export class DevicesService {
     const deviceId = jwtPayload.deviceId;
     const lastActiveDate = new Date(jwtPayload.iat * 1000).toISOString();
     const device =
-      await this.devicesQueryRepository.findDeviceByDeviceAndUserIdAndDate(
+      await this.devicesQueryRepository.findDeviceByDeviceIdAndUserIdAndDate(
         deviceId,
         userId,
         lastActiveDate,

@@ -36,9 +36,13 @@ export class UsersRepository {
   }
 
   async deleteUser(id: string): Promise<boolean> {
-    const userInstance = await this.userModel.findOne({ id: id });
-    if (!userInstance) return false;
-    await userInstance.deleteOne();
+    await this.dataSource.query(
+      `
+        DELETE FROM public."Users"
+        WHERE "id" = $1;
+        `,
+      [id],
+    );
     return true;
   }
 
@@ -87,16 +91,21 @@ export class UsersRepository {
   }
 
   async updateBanStatus(
-    user: UserDocument,
+    userId: string,
     banStatus: boolean,
     banReason: string | null,
     banDate: Date | null,
   ) {
-    user.isBanned = banStatus;
-    user.banDate = banDate;
-    user.banReason = banReason;
-
-    await user.save();
+    await this.dataSource.query(
+      `
+        UPDATE public."Users"
+        SET "banStatus" = $1,
+            "banReason" = $2,
+            "banDate" = $3 
+        WHERE "id" = $4
+        `,
+      [banStatus, banReason, banDate, userId],
+    );
     return true;
   }
 

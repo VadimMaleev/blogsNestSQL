@@ -68,7 +68,9 @@ export class UsersService {
   }
 
   async deleteUser(id: string): Promise<boolean> {
-    return this.usersRepository.deleteUser(id);
+    const user = await this.usersRepository.findUserById(id);
+    if (!user) return false;
+    return await this.usersRepository.deleteUser(user.id);
   }
 
   async confirmUser(code: string): Promise<boolean> {
@@ -96,7 +98,7 @@ export class UsersService {
     banStatus: boolean,
     banReason: string,
   ) {
-    const user: UserDocument = await this.usersQueryRepository.findUserById(id);
+    const user: UserDocument = await this.usersRepository.findUserById(id);
     if (!user) throw new BadRequestException();
 
     const banDate = banStatus ? new Date() : null;
@@ -106,7 +108,7 @@ export class UsersService {
     }
 
     await this.usersRepository.updateBanStatus(
-      user,
+      user.id,
       banStatus,
       banReason,
       banDate,
