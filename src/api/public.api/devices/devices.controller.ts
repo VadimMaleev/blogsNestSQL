@@ -9,7 +9,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { DevicesQueryRepository } from '../../../repositories/devices/devices.query.repository';
-import { DevicesService } from './devices.service';
+import { DevicesService } from '../../../application/services/devices.service';
 import { JwtRefreshAuthGuard } from '../../../guards/jwt.refresh.auth.guard';
 
 @Controller('security')

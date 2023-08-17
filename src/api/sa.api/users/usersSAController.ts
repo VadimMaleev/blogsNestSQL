@@ -27,7 +27,6 @@ export class UsersSAController {
     protected usersQueryRepository: UsersQueryRepository,
   ) {}
 
-  //TODO getUsers for Sql
   @Get()
   @UseGuards(BasicAuthGuard)
   async getUsers(@Query() query: UsersQueryDto) {

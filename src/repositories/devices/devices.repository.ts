@@ -18,7 +18,7 @@ export class DevicesRepository {
       `
         INSERT INTO public."Devices"(
         "deviceId", "ip", "title", "lastActiveDate", "userId")
-        VALUES ($1, $2, $3, $4, $5);
+        VALUES ($1, $2, $3, $4, $5)
       `,
       [
         device.deviceId,
@@ -39,7 +39,7 @@ export class DevicesRepository {
       `
         UPDATE public."Devices"
         SET "lastActiveDate"= $1,
-        WHERE "deviceId" = $2 AND "userId" = $3;
+        WHERE "deviceId" = $2 AND "userId" = $3
       `,
       [newLastActiveDate, deviceId, userId],
     );
@@ -54,7 +54,7 @@ export class DevicesRepository {
     await this.dataSource.query(
       `
         DELETE FROM public."Devices"
-        WHERE "deviceId" = $1 AND "userId" = $2 AND "lastActiveDate" = $3;
+        WHERE "deviceId" = $1 AND "userId" = $2 AND "lastActiveDate" = $3
     `,
       [deviceId, userId, lastActiveDate],
     );
@@ -65,24 +65,25 @@ export class DevicesRepository {
     userId: string,
     deviceId: string,
   ): Promise<boolean> {
-    try {
-      await this.devicesModel.deleteMany({
-        userId,
-        deviceId: { $ne: deviceId },
-      });
-      return true;
-    } catch (e) {
-      return false;
-    }
+    await this.dataSource.query(
+      `
+        DELETE FROM public."Devices"
+        WHERE "userId" = $1 AND "deviceId" != $2
+      `,
+      [userId, deviceId],
+    );
+    return true;
   }
 
-  async deleteDevice(device: Device): Promise<boolean> {
-    try {
-      await this.devicesModel.deleteOne(device);
-      return true;
-    } catch (e) {
-      return false;
-    }
+  async deleteDevice(deviceId: string): Promise<boolean> {
+    await this.dataSource.query(
+      `
+        DELETE FROM public."Devices"
+        WHERE "deviceId" = $1
+      `,
+      [deviceId],
+    );
+    return true;
   }
 
   async deleteDevicesForBannedUser(userId: string) {

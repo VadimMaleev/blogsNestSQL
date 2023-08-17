@@ -1,7 +1,6 @@
-import { UserDocument } from '../repositories/users/users.schema';
 import { UsersForResponse } from '../types/types';
 
-export const mapUsersForResponse = (user: UserDocument): UsersForResponse => ({
+export const mapUsersForResponse = (user): UsersForResponse => ({
   id: user.id,
   login: user.login,
   email: user.email,

@@ -18,7 +18,7 @@ export class RecoveryCodeRepository {
     await this.dataSource.query(
       `
         INSERT INTO public."RecoveryCodes"(
-        "id", "code", "codeExpirationDate", "userId")
+        "code", "codeExpirationDate", "userId")
         VALUES ($1, $2, $3);`,
       [recoveryCode.code, recoveryCode.codeExpirationDate, recoveryCode.userId],
     );

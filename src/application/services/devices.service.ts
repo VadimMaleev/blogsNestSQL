@@ -1,6 +1,6 @@
-import { JWTService } from '../../../repositories/jwt/jwt.service';
-import { DevicesRepository } from '../../../repositories/devices/devices.repository';
-import { DevicesQueryRepository } from '../../../repositories/devices/devices.query.repository';
+import { JWTService } from '../../repositories/jwt/jwt.service';
+import { DevicesRepository } from '../../repositories/devices/devices.repository';
+import { DevicesQueryRepository } from '../../repositories/devices/devices.query.repository';
 import { HttpException, Injectable, NotFoundException } from '@nestjs/common';
 
 @Injectable()
@@ -36,7 +36,9 @@ export class DevicesService {
     );
     if (!device) throw new NotFoundException();
     if (device.userId !== userId) throw new HttpException('Not your own', 403);
-    const isDeleted = await this.devicesRepository.deleteDevice(device);
+    const isDeleted = await this.devicesRepository.deleteDevice(
+      device.deviceId,
+    );
     if (!isDeleted) throw new NotFoundException();
     return true;
   }

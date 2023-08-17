@@ -23,41 +23,52 @@ export class UsersQueryRepository {
     const email: string = query.searchEmailTerm || '';
     const banStatus: string = query.banStatus || 'all';
 
-    const _query = [];
-    if (login) {
-      _query.push({ login: { $regex: `(?i)(${login})` } });
-    }
-    if (email) {
-      _query.push({ email: { $regex: `(?i)(${email})` } });
-    }
+    const createFilterForGetUsers = (
+      login: string,
+      email: string,
+      banStatus: string,
+    ) => {
+      let filter = '';
+      let isBanned = 'isBanned = true OR isBanned = false';
 
-    if (banStatus === 'banned') {
-      _query.push({ isBanned: true });
-    }
+      if (banStatus === 'banned') isBanned = 'isBanned = true';
+      if (banStatus === 'notBanned') isBanned = 'isBanned = false';
+      const loginTerm = login ? ` AND login like %${login}%` : '';
+      const emailTerm = email ? ` AND email like %${email}%` : '';
 
-    if (banStatus === 'notBanned') {
-      _query.push({ isBanned: false });
-    }
+      filter = isBanned + loginTerm + emailTerm;
+      return filter;
+    };
 
-    const queryFetch = _query.length ? { $or: _query } : {};
+    const filter: string = createFilterForGetUsers(login, email, banStatus);
 
-    const items = await this.userModel
-      .find(queryFetch)
-      .sort({ [sortBy]: sortDirection })
-      .skip((pageNumber - 1) * pageSize)
-      .limit(pageSize);
+    const items = await this.dataSource.query(
+      `
+    SELECT "id", "login", "email", "createdAt", "isBanned", "banDate", "banReason"
+    FROM public."Users"
+    WHERE ${filter}
+    ORDER BY $1 ${sortDirection}
+    OFFSET  $2 LIMIT $3
+    `,
+      [sortBy, (pageNumber - 1) * pageSize, pageSize],
+    );
 
     const itemsForResponse: UsersForResponse[] = items.map((i) =>
       mapUsersForResponse(i),
     );
 
+    const totalCount = await this.dataSource.query(
+      `
+      SELECT count(*)
+      FROM public."Users"
+      WHERE ${filter}
+      `,
+    );
     return {
-      pagesCount: Math.ceil(
-        (await this.userModel.count(queryFetch)) / pageSize,
-      ),
+      pagesCount: Math.ceil(+totalCount[0].count / pageSize),
       page: pageNumber,
       pageSize: pageSize,
-      totalCount: await this.userModel.count(queryFetch),
+      totalCount: +totalCount[0].count,
       items: itemsForResponse,
     };
   }

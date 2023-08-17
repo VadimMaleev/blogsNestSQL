@@ -37,7 +37,7 @@ import { DevicesQueryRepository } from './repositories/devices/devices.query.rep
 import { Device, DeviceSchema } from './repositories/devices/devices.schema';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { DevicesController } from './api/public.api/devices/devices.controller';
-import { DevicesService } from './api/public.api/devices/devices.service';
+import { DevicesService } from './application/services/devices.service';
 import { JwtBlackList, JwtTokensSchema } from './repositories/jwt/jwt.schema';
 import { JwtRepository } from './repositories/jwt/jwt.repository';
 import { Like, LikesSchema } from './repositories/likes/likes.schema';
@@ -72,14 +72,11 @@ const useCases = [
 @Module({
   imports: [
     TypeOrmModule.forRoot({
+      url: 'postgres://VadimMaleev:Q1BS4wvXkaUo@ep-lively-night-96871029.eu-central-1.aws.neon.tech/neondb',
       type: 'postgres',
-      host: 'localhost',
-      port: 5434,
-      username: 'postgres',
-      password: 'admin',
-      database: 'blogs',
+      ssl: true,
       autoLoadEntities: false,
-      synchronize: false,
+      synchronize: true,
     }),
     CqrsModule,
     ConfigModule.forRoot(),

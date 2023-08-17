@@ -13,9 +13,14 @@ export class DevicesQueryRepository {
   ) {}
 
   async findDevicesForUser(userId: string) {
-    return this.devicesModel
-      .find({ userId: userId }, { _id: 0, userId: 0 })
-      .lean();
+    return this.dataSource.query(
+      `
+        SELECT "ip", "title", "lastActiveDate", "deviceId"
+        FROM public."Devices"
+        WHERE "userId" = $1
+      `,
+      [userId],
+    );
   }
 
   async findDeviceByDeviceIdAndUserIdAndDate(
@@ -26,7 +31,7 @@ export class DevicesQueryRepository {
     const device = await this.dataSource.query(
       `
         SELECT "deviceId", "ip", "title", "lastActiveDate", "userId"
-        FROM public."Devices";
+        FROM public."Devices"
         WHERE "deviceId" = $1 AND "userId" = $2 AND "lastActiveDate" = $3
       `,
       [deviceId, userId, lastActiveDate],
@@ -35,6 +40,14 @@ export class DevicesQueryRepository {
   }
 
   async findDeviceByDeviceId(deviceId: string) {
-    return this.devicesModel.findOne({ deviceId });
+    const device = await this.dataSource.query(
+      `
+        SELECT "deviceId", "ip", "title", "lastActiveDate", "userId"
+        FROM public."Devices"
+        WHERE "deviceId" = $1
+      `,
+      [deviceId],
+    );
+    return device[0];
   }
 }
