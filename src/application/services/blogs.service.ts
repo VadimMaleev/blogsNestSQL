@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, HttpException, Injectable } from '@nestjs/common';
 import { BlogsRepository } from '../../repositories/blogs/blogs.repo';
 import { BlogCreateInputModelType } from '../../types/input.models';
 import { BlogsForResponse } from '../../types/types';
@@ -50,11 +50,17 @@ export class BlogsService {
     inputModel: BlogCreateInputModelType,
     userId: string,
   ): Promise<boolean> {
-    return this.blogsRepository.updateBlog(id, inputModel, userId);
+    const blog = await this.blogsRepository.getBlogById(id);
+    if (!blog) return false;
+    if (blog.userId !== userId) throw new HttpException('Not your own', 403);
+    return this.blogsRepository.updateBlog(id, inputModel);
   }
 
   async deleteBlog(id: string, userId: string): Promise<boolean> {
-    return this.blogsRepository.deleteBlog(id, userId);
+    const blog = await this.blogsRepository.getBlogById(id);
+    if (!blog) return false;
+    if (blog.userId !== userId) throw new HttpException('Not your own', 403);
+    return this.blogsRepository.deleteBlog(id);
   }
 
   async bindBlogToUser(blog: BlogDocument, user: UserDocument) {
