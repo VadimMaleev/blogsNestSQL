@@ -36,10 +36,12 @@ export class UsersQueryRepository {
       if (login && email) {
         return (
           isBanned +
-          ` AND ("login" like '%${login}%' OR "email" like '%${email}%')`
+          ` AND (LOWER("login") like LOWER('%${login}%') OR "email" like '%${email}%')`
         );
       }
-      const loginTerm = login ? ` AND "login" like '%${login}%'` : ''; //` AND "login" like '%%'`;
+      const loginTerm = login
+        ? ` AND LOWER("login") like LOWER('%${login}%')`
+        : ''; //` AND "login" like '%%'`;
       const emailTerm = email ? ` AND "email" like '%${email}%'` : ''; //` AND "email" like '%%'`;
 
       filter = isBanned + loginTerm + emailTerm; // 'isBanned = false '' ''
