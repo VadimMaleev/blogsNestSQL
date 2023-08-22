@@ -33,14 +33,16 @@ export class UsersQueryRepository {
 
       if (banStatus === 'banned') isBanned = '"isBanned" = true';
       if (banStatus === 'notBanned') isBanned = '"isBanned" = false';
-      const loginTerm = login
-        ? ` AND "login" like '%${login}%'`
-        : ` AND "login" like '%%'`;
-      const emailTerm = email
-        ? ` AND "email" like '%${email}%'`
-        : ` AND "email" like '%%'`;
+      if (login && email) {
+        return (
+          isBanned +
+          ` AND ("login" like '%${login}%' OR "email" like '%${email}%')`
+        );
+      }
+      const loginTerm = login ? ` AND "login" like '%${login}%'` : ''; //` AND "login" like '%%'`;
+      const emailTerm = email ? ` AND "email" like '%${email}%'` : ''; //` AND "email" like '%%'`;
 
-      filter = isBanned + loginTerm + emailTerm;
+      filter = isBanned + loginTerm + emailTerm; // 'isBanned = false '' ''
       return filter;
     };
 
