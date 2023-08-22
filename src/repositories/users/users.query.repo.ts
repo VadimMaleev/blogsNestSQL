@@ -47,10 +47,10 @@ export class UsersQueryRepository {
     SELECT "id", "login", "email", "createdAt", "isBanned", "banDate", "banReason"
     FROM public."Users"
     WHERE ${filter}
-    ORDER BY $1 ${sortDirection}
-    OFFSET  $2 LIMIT $3
+    ORDER BY "${sortBy}" ${sortDirection}
+    OFFSET  $1 LIMIT $2
     `,
-      [sortBy, (pageNumber - 1) * pageSize, pageSize],
+      [(pageNumber - 1) * pageSize, pageSize],
     );
 
     const itemsForResponse: UsersForResponse[] = items.map((i) =>
