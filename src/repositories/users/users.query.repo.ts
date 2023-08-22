@@ -29,12 +29,12 @@ export class UsersQueryRepository {
       banStatus: string,
     ) => {
       let filter = '';
-      let isBanned = 'isBanned = true OR isBanned = false';
+      let isBanned = '"isBanned" = true OR "isBanned" = false';
 
-      if (banStatus === 'banned') isBanned = 'isBanned = true';
-      if (banStatus === 'notBanned') isBanned = 'isBanned = false';
-      const loginTerm = login ? ` AND login like %${login}%` : '';
-      const emailTerm = email ? ` AND email like %${email}%` : '';
+      if (banStatus === 'banned') isBanned = '"isBanned" = true';
+      if (banStatus === 'notBanned') isBanned = '"isBanned" = false';
+      const loginTerm = login ? ` AND "login" like %${login}%` : '';
+      const emailTerm = email ? ` AND "email" like %${email}%` : '';
 
       filter = isBanned + loginTerm + emailTerm;
       return filter;

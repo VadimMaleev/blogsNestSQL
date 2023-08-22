@@ -119,8 +119,8 @@ export class UsersService {
     }
 
     //await this.postsRepository.updateVisibleStatus(id, banStatus);
-    await this.commentsRepository.updateVisibleStatus(id, banStatus);
-    await this.likesRepository.updateVisibleStatus(id, banStatus);
+    // await this.commentsRepository.updateVisibleStatus(id, banStatus);
+    // await this.likesRepository.updateVisibleStatus(id, banStatus);
   }
 
   async updateUserBanStatusForBlog(

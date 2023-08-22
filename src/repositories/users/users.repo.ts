@@ -99,7 +99,7 @@ export class UsersRepository {
     await this.dataSource.query(
       `
         UPDATE public."Users"
-        SET "banStatus" = $1,
+        SET "isBanned" = $1,
             "banReason" = $2,
             "banDate" = $3 
         WHERE "id" = $4
