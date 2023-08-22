@@ -10,10 +10,10 @@ export class TestingController {
   async deleteAll() {
     await this.dataSource.query(
       `
-      DELETE FROM public."Devices"
-      DELETE FROM public."Users"
-      DELETE FROM public."RecoveryCodes"
-      DELETE FROM public."Tokens"
+      DELETE FROM public."Devices";
+      DELETE FROM public."RecoveryCodes";
+      DELETE FROM public."Tokens";
+      DELETE FROM public."Users";
       `,
     );
     return true;
