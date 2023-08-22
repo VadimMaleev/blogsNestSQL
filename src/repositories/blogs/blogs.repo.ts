@@ -78,14 +78,19 @@ export class BlogsRepository {
   }
 
   async updateBanStatus(
-    blog: BlogDocument,
     banStatus: boolean,
     banDate: Date | null,
+    blogId: string,
   ) {
-    blog.isBanned = banStatus;
-    blog.banDate = banDate;
-
-    await blog.save();
+    await this.dataSource.query(
+      `
+        UPDATE public."Blogs"
+        SET  "isBanned" = $1, 
+             "banDate" = $2
+        WHERE "id" = $3
+        `,
+      [banStatus, banDate, blogId],
+    );
     return true;
   }
 

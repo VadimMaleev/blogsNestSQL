@@ -78,14 +78,15 @@ export class BlogsService {
   }
 
   async banOrUnbanBlog(id: string, banStatus: boolean) {
-    const blog = await this.blogsQueryRepository.getOneBlogById(id);
+    const blog = await this.blogsRepository.getBlogById(id);
     if (!blog) throw new BadRequestException();
 
     let banDate = null;
     if (banStatus) banDate = new Date();
 
-    await this.blogsRepository.updateBanStatus(blog, banStatus, banDate);
+    await this.blogsRepository.updateBanStatus(banStatus, banDate, blog.id);
 
+    //TODO Resume visibility logic for posts
     await this.postsRepository.updateVisibleStatus(id, banStatus);
   }
 }
