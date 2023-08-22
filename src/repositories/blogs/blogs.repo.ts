@@ -4,7 +4,6 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { BlogCreateInputModelType } from '../../types/input.models';
 import { CreateBlogDto } from '../../types/dto';
-import { UserDocument } from '../users/users.schema';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 
@@ -65,10 +64,16 @@ export class BlogsRepository {
     return true;
   }
 
-  async bindBlogToUser(blog: BlogDocument, user: UserDocument) {
-    blog.userId = user.id;
-    blog.login = user.login;
-    await blog.save();
+  async bindBlogToUser(userId, login, blogId) {
+    await this.dataSource.query(
+      `
+        UPDATE public."Blogs"
+        SET  "userId" = $1, 
+             "login" = $2
+        WHERE "id" = $3
+        `,
+      [userId, login, blogId],
+    );
     return true;
   }
 

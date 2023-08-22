@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   Body,
   Controller,
   Get,
@@ -10,11 +9,9 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { BlogsQueryRepository } from '../../../repositories/blogs/blogs.query.repo';
-
 import { BlogsService } from '../../../application/services/blogs.service';
 import { BindBlogToUserParams, BlogsQueryDto } from '../../../types/dto';
 import { BasicAuthGuard } from '../../../guards/basic.auth.guard';
-import { UsersQueryRepository } from '../../../repositories/users/users.query.repo';
 import { BanBlogInputModel } from '../../../types/input.models';
 
 @Controller('sa/blogs')
@@ -22,7 +19,6 @@ export class BlogsSAController {
   constructor(
     protected blogsService: BlogsService,
     protected blogsQueryRepository: BlogsQueryRepository,
-    protected usersQueryRepository: UsersQueryRepository,
   ) {}
 
   @Get()
@@ -35,13 +31,7 @@ export class BlogsSAController {
   @HttpCode(204)
   @UseGuards(BasicAuthGuard)
   async bindBlogToUser(@Param() params: BindBlogToUserParams) {
-    const user = await this.usersQueryRepository.findUserById(params.userId);
-    if (!user) throw new BadRequestException('userId invalid');
-
-    const blog = await this.blogsQueryRepository.getOneBlogById(params.blogId);
-    if (!blog || blog.userId) throw new BadRequestException('blogId invalid');
-
-    return await this.blogsService.bindBlogToUser(blog, user);
+    return await this.blogsService.bindBlogToUser(params.blogId, params.userId);
   }
 
   @Put(':id/ban')

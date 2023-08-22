@@ -4,10 +4,9 @@ import { BlogCreateInputModelType } from '../../types/input.models';
 import { BlogsForResponse } from '../../types/types';
 import { CreateBlogDto } from '../../types/dto';
 import { v4 as uuidv4 } from 'uuid';
-import { BlogDocument } from '../../repositories/blogs/blogs.schema';
-import { UserDocument } from '../../repositories/users/users.schema';
 import { BlogsQueryRepository } from '../../repositories/blogs/blogs.query.repo';
 import { PostsRepository } from '../../repositories/posts/posts.repo';
+import { UsersRepository } from '../../repositories/users/users.repo';
 
 @Injectable()
 export class BlogsService {
@@ -15,6 +14,7 @@ export class BlogsService {
     protected blogsRepository: BlogsRepository,
     protected blogsQueryRepository: BlogsQueryRepository,
     protected postsRepository: PostsRepository,
+    protected usersRepository: UsersRepository,
   ) {}
 
   async createBlog(
@@ -63,8 +63,18 @@ export class BlogsService {
     return this.blogsRepository.deleteBlog(id);
   }
 
-  async bindBlogToUser(blog: BlogDocument, user: UserDocument) {
-    return await this.blogsRepository.bindBlogToUser(blog, user);
+  async bindBlogToUser(blogId: string, userId: string) {
+    const user = await this.usersRepository.findUserById(userId);
+    if (!user) throw new BadRequestException('userId invalid');
+
+    const blog = await this.blogsRepository.getBlogById(blogId);
+    if (!blog || blog.userId) throw new BadRequestException('blogId invalid');
+
+    return await this.blogsRepository.bindBlogToUser(
+      user.id,
+      user.login,
+      blog.id,
+    );
   }
 
   async banOrUnbanBlog(id: string, banStatus: boolean) {
