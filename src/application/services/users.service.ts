@@ -75,7 +75,7 @@ export class UsersService {
 
   async confirmUser(code: string): Promise<boolean> {
     const user = await this.usersQueryRepository.findUserByCode(code);
-    console.log('FIND user: ' + user);
+    console.log('FIND user: ' + { ...user });
     if (!user) return false;
     if (user.isConfirmed) return false;
     if (user.confirmationCode !== code) return false;
