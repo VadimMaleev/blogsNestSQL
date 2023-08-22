@@ -16,7 +16,7 @@ export class JwtRepository {
     await this.dataSource.query(
       `
         INSERT INTO public."Tokens"(
-        "id", "refreshToken")
+        "refreshToken")
         VALUES ($1);
       `,
       [refreshToken],
