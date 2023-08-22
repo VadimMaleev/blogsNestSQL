@@ -38,7 +38,7 @@ export class DevicesRepository {
     await this.dataSource.query(
       `
         UPDATE public."Devices"
-        SET "lastActiveDate"= $1,
+        SET "lastActiveDate"= $1
         WHERE "deviceId" = $2 AND "userId" = $3
       `,
       [newLastActiveDate, deviceId, userId],
