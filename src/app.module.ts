@@ -82,8 +82,8 @@ const useCases = [
     ConfigModule.forRoot(),
     MongooseModule.forRoot(process.env.test),
     ThrottlerModule.forRoot({
-      // ttl: 10,
-      // limit: 5,
+      ttl: 10,
+      limit: 5,
     }),
     MongooseModule.forFeature([
       { name: Blog.name, schema: BlogSchema },
