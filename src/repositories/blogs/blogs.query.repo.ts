@@ -31,7 +31,7 @@ export class BlogsQueryRepository {
       `
         SELECT "id", "name", "description", "websiteUrl", "createdAt", "isMembership"
         FROM public."Blogs"
-        WHERE '"isBanned" = false' ${filter}
+        WHERE "isBanned" = false ${filter}
         ORDER BY "${sortBy}" ${sortDirection}
         OFFSET $1 LIMIT $2
       `,
