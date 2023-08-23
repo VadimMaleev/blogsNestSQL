@@ -28,11 +28,13 @@ import {
 } from '../../../types/dto';
 import { BlogDocument } from '../../../repositories/blogs/blogs.schema';
 import { CommentsQueryRepository } from '../../../repositories/comments/comments.query.repo';
+import { BlogsRepository } from '../../../repositories/blogs/blogs.repo';
 
 @Controller('blogger/blogs')
 export class BloggersBlogsController {
   constructor(
     protected blogsService: BlogsService,
+    protected blogsRepository: BlogsRepository,
     protected blogsQueryRepository: BlogsQueryRepository,
     protected postsService: PostsService,
     protected commentsQueryRepository: CommentsQueryRepository,
@@ -92,9 +94,7 @@ export class BloggersBlogsController {
     @Body() postInputModel: PostCreateFromBlogInputModelType,
     @Request() req,
   ) {
-    const blog: BlogDocument = await this.blogsQueryRepository.getOneBlogById(
-      id,
-    );
+    const blog: BlogDocument = await this.blogsRepository.getBlogById(id);
     if (!blog) throw new NotFoundException('Blog not found');
     if (blog.userId !== req.user.id)
       throw new HttpException('Not your own', 403);

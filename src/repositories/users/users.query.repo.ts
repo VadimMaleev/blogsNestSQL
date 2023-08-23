@@ -1,7 +1,4 @@
 import { UsersQueryDto } from '../../types/dto';
-import { InjectModel } from '@nestjs/mongoose';
-import { User, UserDocument } from './users.schema';
-import { Model } from 'mongoose';
 import { UsersForResponse, UsersPaginationResponse } from '../../types/types';
 import { Injectable } from '@nestjs/common';
 import { mapUsersForResponse } from '../../helpers/map.users.for.response';
@@ -10,10 +7,8 @@ import { InjectDataSource } from '@nestjs/typeorm';
 
 @Injectable()
 export class UsersQueryRepository {
-  constructor(
-    @InjectModel(User.name) private userModel: Model<UserDocument>,
-    @InjectDataSource() protected dataSource: DataSource,
-  ) {}
+  constructor(@InjectDataSource() protected dataSource: DataSource) {}
+
   async getUsers(query: UsersQueryDto): Promise<UsersPaginationResponse> {
     const pageNumber: number = Number(query.pageNumber) || 1;
     const pageSize: number = Number(query.pageSize) || 10;
@@ -56,7 +51,7 @@ export class UsersQueryRepository {
     FROM public."Users"
     WHERE ${filter}
     ORDER BY "${sortBy}" ${sortDirection}
-    OFFSET  $1 LIMIT $2
+    OFFSET $1 LIMIT $2
     `,
       [(pageNumber - 1) * pageSize, pageSize],
     );
@@ -127,9 +122,5 @@ export class UsersQueryRepository {
       [loginOrEmail],
     );
     return user[0];
-  }
-
-  async findUserById(id: string): Promise<UserDocument> {
-    return this.userModel.findOne({ id: id });
   }
 }

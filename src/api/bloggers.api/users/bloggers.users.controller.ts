@@ -15,15 +15,15 @@ import { JwtAuthGuard } from '../../../guards/jwt.auth.guard';
 import { BanUserForBlogInputModel } from '../../../types/input.models';
 import { UsersService } from '../../../application/services/users.service';
 import { LoginQueryDto } from '../../../types/dto';
-import { BlogsQueryRepository } from '../../../repositories/blogs/blogs.query.repo';
 import { BlogDocument } from '../../../repositories/blogs/blogs.schema';
 import { BannedUsersForBlogRepository } from '../../../repositories/users/banned.users.for.blog.repo';
+import { BlogsRepository } from '../../../repositories/blogs/blogs.repo';
 
 @Controller('blogger/users')
 export class BloggersUsersController {
   constructor(
     protected usersService: UsersService,
-    protected blogQueryRepository: BlogsQueryRepository,
+    protected blogsRepository: BlogsRepository,
     protected bannedUsersForBlogRepository: BannedUsersForBlogRepository,
   ) {}
 
@@ -52,9 +52,7 @@ export class BloggersUsersController {
     @Query() query: LoginQueryDto,
     @Request() req,
   ) {
-    const blog: BlogDocument = await this.blogQueryRepository.getOneBlogById(
-      id,
-    );
+    const blog: BlogDocument = await this.blogsRepository.getBlogById(id);
     if (!blog) throw new NotFoundException('Blog Not Found');
     if (req.user.id !== blog.userId)
       throw new HttpException('Not Your Own', 403);

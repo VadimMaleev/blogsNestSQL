@@ -3,15 +3,15 @@ import { CommentsRepository } from '../../repositories/comments/comments.repo';
 import { v4 as uuidv4 } from 'uuid';
 import { CreateCommentDto } from '../../types/dto';
 import { CommentsForResponse } from '../../types/types';
-import { UsersQueryRepository } from '../../repositories/users/users.query.repo';
 import { LikesRepository } from '../../repositories/likes/likes.repo';
 import { BannedUsersForBlogRepository } from '../../repositories/users/banned.users.for.blog.repo';
+import { UsersRepository } from '../../repositories/users/users.repo';
 
 @Injectable()
 export class CommentsService {
   constructor(
     protected commentsRepository: CommentsRepository,
-    protected usersQueryRepository: UsersQueryRepository,
+    protected usersRepository: UsersRepository,
     protected likesRepository: LikesRepository,
     protected bannedUsersForBlogRepository: BannedUsersForBlogRepository,
   ) {}
@@ -51,7 +51,7 @@ export class CommentsService {
   }
 
   async makeLikeOrUnlike(id: string, userId: string, likeStatus: string) {
-    const user = await this.usersQueryRepository.findUserById(userId);
+    const user = await this.usersRepository.findUserById(userId);
     return this.likesRepository.makeLikeOrUnlike(
       id,
       userId,
