@@ -19,7 +19,7 @@ export class BlogsRepository {
       `
         INSERT INTO public."Blogs"(
         "id", "name", "description", "websiteUrl", "createdAt", "isMembership", "userId", "login", "isBanned", "banDate")
-        VALUES $1, $2, $3, $4, $5, $6, $7, $8, $9, $10);
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);
     `,
       [
         newBlog.id,
