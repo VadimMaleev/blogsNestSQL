@@ -8,24 +8,43 @@ import { Model } from 'mongoose';
 import { BannedUserForBlogDto, LoginQueryDto } from '../../types/dto';
 import { mapBannedUsersForBlog } from '../../helpers/map.banned.users.for.blog';
 import { BannedUsersForBlogResponse } from '../../types/types';
+import { InjectDataSource } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
 
 @Injectable()
 export class BannedUsersForBlogRepository {
   constructor(
     @InjectModel(BannedUserForBlog.name)
     private bannedUserForBlogModel: Model<BannedUsersForBlogDocument>,
+    @InjectDataSource() protected dataSource: DataSource,
   ) {}
 
-  async addUser(bannedUser: BannedUserForBlogDto) {
-    await new this.bannedUserForBlogModel(bannedUser).save();
+  async addBannedUser(bannedUser: BannedUserForBlogDto) {
+    await this.dataSource.query(
+      `
+        INSERT INTO public."BannedUsersForBlogs"(
+        "userId", "login", "isBanned", "banDate", "banReason", "blogId")
+        VALUES ($1, $2, $3, $4, $5, $6)
+    `,
+      [
+        bannedUser.userId,
+        bannedUser.login,
+        bannedUser.isBanned,
+        bannedUser.banDate,
+        bannedUser.banReason,
+        bannedUser.blogId,
+      ],
+    );
   }
 
-  async deleteUser(userId: string) {
-    const userInstance = await this.bannedUserForBlogModel.findOne({
-      userId: userId,
-    });
-    if (!userId) return false;
-    await userInstance.deleteOne();
+  async deleteBannedUser(userId: string) {
+    await this.dataSource.query(
+      `
+        DELETE FROM public."BannedUsersForBlogs"
+        WHERE "userId" = $1
+        `,
+      [userId],
+    );
     return true;
   }
 
@@ -39,33 +58,62 @@ export class BannedUsersForBlogRepository {
     const sortDirection: 'asc' | 'desc' = query.sortDirection || 'desc';
     const loginSearchTerm: string = query.searchLoginTerm || '';
 
-    const items = await this.bannedUserForBlogModel
-      .find({
-        blogId: blogId,
-        login: { $regex: loginSearchTerm, $options: 'i' },
-      })
-      .sort({ [sortBy]: sortDirection })
-      .skip((pageNumber - 1) * pageSize)
-      .limit(pageSize);
+    let filter = '';
+    if (loginSearchTerm) {
+      filter = ` AND LOWER("login") like LOWER('%${loginSearchTerm}%')`;
+    }
 
+    const items = await this.dataSource.query(
+      `
+      SELECT "userId", "login", "isBanned", "banDate", "banReason"
+        FROM public."BannedUsersForBlogs"
+        WHERE "blogId" = $1 ${filter}
+        ORDER BY "${sortBy}" ${sortDirection}
+        OFFSET $2 LIMIT $3
+      `,
+      [blogId, (pageNumber - 1) * pageSize, pageSize],
+    );
     const itemsForResponse = items.map(mapBannedUsersForBlog);
-    const totalCount = await this.bannedUserForBlogModel.count({
-      blogId: blogId,
-      login: { $regex: loginSearchTerm, $options: 'i' },
-    });
+
+    const totalCount = await this.dataSource.query(
+      `
+      SELECT count(*)
+      FROM public."BannedUsersForBlogs"
+      WHERE "blogId" = $1 ${filter}
+      `,
+      [blogId],
+    );
+
     return {
-      pagesCount: Math.ceil(totalCount / pageSize),
+      pagesCount: Math.ceil(+totalCount[0].count / pageSize),
       page: pageNumber,
       pageSize: pageSize,
-      totalCount: totalCount,
+      totalCount: +totalCount[0].count,
       items: itemsForResponse,
     };
   }
 
   async findBannedUserByUserIdAndBlogId(userId: string, blogId: string) {
-    return this.bannedUserForBlogModel.findOne({
-      blogId: blogId,
-      userId: userId,
-    });
+    const user = await this.dataSource.query(
+      `
+        SELECT "userId", "login", "isBanned", "banDate", "banReason", "blogId"
+        FROM public."BannedUsersForBlogs"
+        WHERE "blogId" = $1 AND "userId" = $2
+      `,
+      [blogId, userId],
+    );
+    return user[0];
+  }
+
+  async getBannedUserById(userId: string) {
+    const user = await this.dataSource.query(
+      `
+        SELECT "userId", "login", "isBanned", "banDate", "banReason", "blogId"
+        FROM public."BannedUsersForBlogs"
+        WHERE "userId" = $1
+      `,
+      [userId],
+    );
+    return user[0];
   }
 }

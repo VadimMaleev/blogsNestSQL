@@ -148,9 +148,17 @@ export class UsersService {
     );
 
     if (banStatus) {
-      return await this.bannedUsersForBlogRepository.addUser(bannedUser);
+      const user = await this.bannedUsersForBlogRepository.getBannedUserById(
+        id,
+      );
+      if (user) return true;
+      return await this.bannedUsersForBlogRepository.addBannedUser(bannedUser);
     } else {
-      return await this.bannedUsersForBlogRepository.deleteUser(id);
+      const user = await this.bannedUsersForBlogRepository.getBannedUserById(
+        id,
+      );
+      if (!user) return false;
+      return await this.bannedUsersForBlogRepository.deleteBannedUser(id);
     }
   }
 }
