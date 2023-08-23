@@ -55,7 +55,7 @@ export class BlogsRepository {
       `
         UPDATE public."Blogs"
         SET  "name" = $1, 
-             "description" = $2
+             "description" = $2,
              "websiteUrl" = $3
         WHERE "id" = $4
         `,
