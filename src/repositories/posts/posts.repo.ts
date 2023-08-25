@@ -19,7 +19,7 @@ export class PostsRepository {
       `
         INSERT INTO public."Posts"(
         "id", "title", "shortDescription", "content", "blogId", "blogName", "createdAt", "userId", "isVisible")
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9);
       `,
       [
         newPost.id,
