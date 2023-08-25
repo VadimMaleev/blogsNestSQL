@@ -4,7 +4,6 @@ import { BlogCreateInputModelType } from '../../types/input.models';
 import { BlogsForResponse } from '../../types/types';
 import { CreateBlogDto } from '../../types/dto';
 import { v4 as uuidv4 } from 'uuid';
-import { BlogsQueryRepository } from '../../repositories/blogs/blogs.query.repo';
 import { PostsRepository } from '../../repositories/posts/posts.repo';
 import { UsersRepository } from '../../repositories/users/users.repo';
 
@@ -12,7 +11,6 @@ import { UsersRepository } from '../../repositories/users/users.repo';
 export class BlogsService {
   constructor(
     protected blogsRepository: BlogsRepository,
-    protected blogsQueryRepository: BlogsQueryRepository,
     protected postsRepository: PostsRepository,
     protected usersRepository: UsersRepository,
   ) {}
