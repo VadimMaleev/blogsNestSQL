@@ -54,24 +54,24 @@ export class BannedUsersForBlogRepository {
   ): Promise<BannedUsersForBlogResponse> {
     const pageNumber: number = Number(query.pageNumber) || 1;
     const pageSize: number = Number(query.pageSize) || 10;
-    const sortBy: string = query.sortBy || 'createdAt';
+    const sortBy: string = query.sortBy || 'banDate';
     const sortDirection: 'asc' | 'desc' = query.sortDirection || 'desc';
     const loginSearchTerm: string = query.searchLoginTerm || '';
 
-    let filter = '';
+    let filter = `"blogId" = '${blogId}'`;
     if (loginSearchTerm) {
-      filter = ` AND LOWER("login") like LOWER('%${loginSearchTerm}%')`;
+      filter += ` AND LOWER("login") like LOWER('%${loginSearchTerm}%')`;
     }
 
     const items = await this.dataSource.query(
       `
       SELECT "userId", "login", "isBanned", "banDate", "banReason"
         FROM public."BannedUsersForBlogs"
-        WHERE "blogId" = $1 ${filter}
+        WHERE ${filter}
         ORDER BY "${sortBy}" ${sortDirection}
-        OFFSET $2 LIMIT $3
+        OFFSET $1 LIMIT $2
       `,
-      [blogId, (pageNumber - 1) * pageSize, pageSize],
+      [(pageNumber - 1) * pageSize, pageSize],
     );
     const itemsForResponse = items.map(mapBannedUsersForBlog);
 
@@ -79,7 +79,7 @@ export class BannedUsersForBlogRepository {
       `
       SELECT count(*)
       FROM public."BannedUsersForBlogs"
-      WHERE "blogId" = $1 ${filter}
+      WHERE ${filter}
       `,
       [blogId],
     );
