@@ -1,20 +1,19 @@
 import { Injectable } from '@nestjs/common';
-import {
-  BlogsForResponse,
-  PostsForResponse,
-  PostsPaginationResponse,
-} from '../../types/types';
+import { PostsForResponse, PostsPaginationResponse } from '../../types/types';
 import { InjectModel } from '@nestjs/mongoose';
 import { Post, PostDocument } from './posts.schema';
 import { Model } from 'mongoose';
 import { mapPostWithLikes } from '../../helpers/map.post.with.likes';
 import { PaginationDto } from '../../types/dto';
 import { LikesRepository } from '../likes/likes.repo';
+import { InjectDataSource } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
 
 @Injectable()
 export class PostsQueryRepository {
   constructor(
     @InjectModel(Post.name) private postModel: Model<PostDocument>,
+    @InjectDataSource() protected dataSource: DataSource,
     protected likesRepository: LikesRepository,
   ) {}
 
@@ -22,8 +21,16 @@ export class PostsQueryRepository {
     id: string,
     userId: string | null,
   ): Promise<PostsForResponse | null> {
-    const post = await this.postModel.findOne({ id: id, isVisible: true });
-    if (!post) return null;
+    const post = await this.dataSource.query(
+      `
+        SELECT "id", "title", "shortDescription", "content", "blogId", "blogName", "createdAt", "userId", "isVisible"
+        FROM public."Posts"
+        WHERE "id" = $1 AND "isVisible" = true
+      `,
+      [id],
+    );
+    if (!post[0]) return null;
+
     const likesCount = await this.likesRepository.likesCount(id);
     const dislikeCount = await this.likesRepository.dislikeCount(id);
     const myStatus = await this.likesRepository.getMyStatus(id, userId);
@@ -46,11 +53,16 @@ export class PostsQueryRepository {
     const sortBy: string = query.sortBy || 'createdAt';
     const sortDirection: 'asc' | 'desc' = query.sortDirection || 'desc';
 
-    const items = await this.postModel
-      .find({ isVisible: true })
-      .skip((pageNumber - 1) * pageSize)
-      .limit(pageSize)
-      .sort({ [sortBy]: sortDirection });
+    const items = await this.dataSource.query(
+      `
+        SELECT "id", "title", "shortDescription", "content", "blogId", "blogName", "createdAt", "userId", "isVisible"
+        FROM public."Posts"
+        WHERE "isVisible" = true
+        ORDER BY "${sortBy}" ${sortDirection}
+        OFFSET $1 LIMIT $2
+      `,
+      [(pageNumber - 1) * pageSize, pageSize],
+    );
 
     const itemsWithLikes = await Promise.all(
       items.map(async (i) => {
@@ -68,17 +80,26 @@ export class PostsQueryRepository {
         return mappedForResponse;
       }),
     );
+
+    const totalCount = await this.dataSource.query(
+      `
+      SELECT count(*)
+      FROM public."Posts"
+      WHERE "isVisible" = true
+      `,
+    );
+
     return {
-      pagesCount: Math.ceil((await this.postModel.count({})) / pageSize),
+      pagesCount: Math.ceil(+totalCount[0].count / pageSize),
       page: pageNumber,
       pageSize: pageSize,
-      totalCount: await this.postModel.count({}),
+      totalCount: +totalCount[0].count,
       items: itemsWithLikes,
     };
   }
 
   async getPostsForBlog(
-    blog: BlogsForResponse,
+    blogId: string,
     query: PaginationDto,
     userId: string | null,
   ): Promise<PostsPaginationResponse> {
@@ -87,11 +108,16 @@ export class PostsQueryRepository {
     const sortBy: string = query.sortBy || 'createdAt';
     const sortDirection: 'asc' | 'desc' = query.sortDirection || 'desc';
 
-    const items = await this.postModel
-      .find({ blogId: blog.id, isVisible: true })
-      .skip((pageNumber - 1) * pageSize)
-      .limit(pageSize)
-      .sort({ [sortBy]: sortDirection });
+    const items = await this.dataSource.query(
+      `
+        SELECT "id", "title", "shortDescription", "content", "blogId", "blogName", "createdAt", "userId", "isVisible"
+        FROM public."Posts"
+        WHERE "blogId" = $1 AND "isVisible" = true
+        ORDER BY "${sortBy}" ${sortDirection}
+        OFFSET $2 LIMIT $3
+      `,
+      [blogId, (pageNumber - 1) * pageSize, pageSize],
+    );
 
     const itemsWithLikes = await Promise.all(
       items.map(async (i) => {
@@ -109,18 +135,21 @@ export class PostsQueryRepository {
         return mappedForResponse;
       }),
     );
+
+    const totalCount = await this.dataSource.query(
+      `
+      SELECT count(*)
+      FROM public."Posts"
+      WHERE "blogId" = $1 AND "isVisible" = true
+      `,
+    );
+
     return {
-      pagesCount: Math.ceil(
-        (await this.postModel.count({ blogId: blog.id })) / pageSize,
-      ),
+      pagesCount: Math.ceil(+totalCount[0].count / pageSize),
       page: pageNumber,
       pageSize: pageSize,
-      totalCount: await this.postModel.count({ blogId: blog.id }),
+      totalCount: +totalCount[0].count,
       items: itemsWithLikes,
     };
-  }
-
-  async findPostById(id: string): Promise<PostDocument> {
-    return this.postModel.findOne({ id: id });
   }
 }

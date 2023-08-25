@@ -22,12 +22,14 @@ import { CommentsQueryRepository } from '../../../repositories/comments/comments
 import { JwtAuthGuard } from '../../../guards/jwt.auth.guard';
 import { CommentsService } from '../../../application/services/comments.service';
 import { ExtractUserIdFromHeadersUseCase } from '../../../helpers/extract.userId.from.headers';
+import { PostsRepository } from '../../../repositories/posts/posts.repo';
 
 @Controller('posts')
 export class PublicPostsController {
   constructor(
     protected postsService: PostsService,
     protected postsQueryRepository: PostsQueryRepository,
+    protected postsRepository: PostsRepository,
     protected commentsQueryRepository: CommentsQueryRepository,
     protected commentsService: CommentsService,
     protected extractUserIdFromHeadersUseCase: ExtractUserIdFromHeadersUseCase,
@@ -67,7 +69,7 @@ export class PublicPostsController {
     if (req.headers.authorization) {
       userId = await this.extractUserIdFromHeadersUseCase.execute(req);
     }
-    const post = await this.postsQueryRepository.findPostById(id);
+    const post = await this.postsRepository.getPostById(id);
     if (!post) throw new NotFoundException('Post not found');
     return this.commentsQueryRepository.getCommentsForPost(id, query, userId);
   }
@@ -79,7 +81,7 @@ export class PublicPostsController {
     @Param('id') id: string,
     @Request() req,
   ) {
-    const post = await this.postsQueryRepository.findPostById(id);
+    const post = await this.postsRepository.getPostById(id);
     if (!post) throw new NotFoundException();
 
     return await this.commentsService.createComment(
@@ -99,7 +101,7 @@ export class PublicPostsController {
     @Param('id') id: string,
     @Request() req,
   ) {
-    const post = await this.postsQueryRepository.findPostById(id);
+    const post = await this.postsRepository.getPostById(id);
     if (!post) throw new NotFoundException();
     const userId: string | null =
       await this.extractUserIdFromHeadersUseCase.execute(req);
