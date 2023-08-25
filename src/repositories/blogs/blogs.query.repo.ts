@@ -22,16 +22,16 @@ export class BlogsQueryRepository {
     const sortBy: string = query.sortBy || 'createdAt';
     const sortDirection: 'asc' | 'desc' = query.sortDirection || 'desc';
 
-    let filter = '';
+    let filter = '"isBanned" = false';
     if (searchNameTerm) {
-      filter = `(LOWER("name") like LOWER('%${searchNameTerm}%'))`;
+      filter += ` AND (LOWER("name") like LOWER('%${searchNameTerm}%'))`;
     }
 
     const itemsForResponse = await this.dataSource.query(
       `
         SELECT "id", "name", "description", "websiteUrl", "createdAt", "isMembership"
         FROM public."Blogs"
-        WHERE "isBanned" = false AND ${filter}
+        WHERE ${filter}
         ORDER BY "${sortBy}" ${sortDirection}
         OFFSET $1 LIMIT $2
       `,
@@ -42,7 +42,7 @@ export class BlogsQueryRepository {
       `
       SELECT count(*)
       FROM public."Blogs"
-      WHERE '"isBanned" = false' ${filter}
+      WHERE ${filter}
       `,
     );
 
