@@ -7,7 +7,6 @@ import { plugForCreatingPosts } from '../../helpers/plug.for.creating.posts.and.
 import { LikesRepository } from '../../repositories/likes/likes.repo';
 import { BlogDocument } from '../../repositories/blogs/blogs.schema';
 import { PostDocument } from '../../repositories/posts/posts.schema';
-import { PostsQueryRepository } from '../../repositories/posts/posts.query.repo';
 import { UsersRepository } from '../../repositories/users/users.repo';
 import { BlogsRepository } from '../../repositories/blogs/blogs.repo';
 
@@ -15,8 +14,7 @@ import { BlogsRepository } from '../../repositories/blogs/blogs.repo';
 export class PostsService {
   constructor(
     protected blogsRepository: BlogsRepository,
-    protected postRepository: PostsRepository,
-    protected postsQueryRepository: PostsQueryRepository,
+    protected postsRepository: PostsRepository,
     protected usersRepository: UsersRepository,
     protected likesRepository: LikesRepository,
   ) {}
@@ -37,7 +35,7 @@ export class PostsService {
       userId,
       true,
     );
-    await this.postRepository.createPost(newPost);
+    await this.postsRepository.createPost(newPost);
     return plugForCreatingPosts(newPost);
   }
 
@@ -45,7 +43,7 @@ export class PostsService {
     const blog: BlogDocument = await this.blogsRepository.getBlogById(
       params.blogId,
     );
-    const post: PostDocument = await this.postsQueryRepository.findPostById(
+    const post: PostDocument = await this.postsRepository.getPostById(
       params.postId,
     );
 
@@ -53,7 +51,7 @@ export class PostsService {
     if (!post) throw new NotFoundException('Post not Found');
     if (post.userId !== userId) throw new HttpException('Not your own', 403);
 
-    return this.postRepository.deletePost(params.postId);
+    return this.postsRepository.deletePost(params.postId);
   }
 
   async updatePost(
@@ -63,14 +61,12 @@ export class PostsService {
     userId: string,
   ) {
     const blog: BlogDocument = await this.blogsRepository.getBlogById(blogId);
-    const post: PostDocument = await this.postsQueryRepository.findPostById(
-      postId,
-    );
+    const post: PostDocument = await this.postsRepository.getPostById(postId);
 
     if (!blog) throw new NotFoundException('Blog not found');
     if (!post) throw new NotFoundException('Post not Found');
     if (post.userId !== userId) throw new HttpException('Not your own', 403);
-    return this.postRepository.updatePost(postId, postInputModel);
+    return this.postsRepository.updatePost(postId, postInputModel);
   }
 
   async makeLikeOrUnlike(id: string, userId: string, likeStatus: string) {

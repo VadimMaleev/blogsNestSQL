@@ -24,14 +24,14 @@ export class BlogsQueryRepository {
 
     let filter = '';
     if (searchNameTerm) {
-      filter = ` AND LOWER("name") like LOWER('%${searchNameTerm}%')`;
+      filter = `LOWER("name") like LOWER('%${searchNameTerm}%')`;
     }
 
     const itemsForResponse = await this.dataSource.query(
       `
         SELECT "id", "name", "description", "websiteUrl", "createdAt", "isMembership"
         FROM public."Blogs"
-        WHERE "isBanned" = false ${filter}
+        WHERE "isBanned" = false AND ${filter}
         ORDER BY "${sortBy}" ${sortDirection}
         OFFSET $1 LIMIT $2
       `,
@@ -64,14 +64,14 @@ export class BlogsQueryRepository {
 
     let filter = '';
     if (searchNameTerm) {
-      filter = ` AND LOWER("name") like LOWER('%${searchNameTerm}%')`;
+      filter = `LOWER("name") like LOWER('%${searchNameTerm}%')`;
     }
 
     const itemsForResponse = await this.dataSource.query(
       `
         SELECT "id", "name", "description", "websiteUrl", "createdAt", "isMembership"
         FROM public."Blogs"
-        WHERE "userId" = $1 ${filter}
+        WHERE "userId" = $1 AND ${filter}
         ORDER BY "${sortBy}" ${sortDirection}
         OFFSET $2 LIMIT $3
       `,

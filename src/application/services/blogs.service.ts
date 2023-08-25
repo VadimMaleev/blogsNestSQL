@@ -85,8 +85,6 @@ export class BlogsService {
     if (banStatus) banDate = new Date();
 
     await this.blogsRepository.updateBanStatus(banStatus, banDate, blog.id);
-
-    //TODO Resume visibility logic for posts
     await this.postsRepository.updateVisibleStatus(id, banStatus);
   }
 }
