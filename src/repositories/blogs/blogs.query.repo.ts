@@ -85,8 +85,8 @@ export class BlogsQueryRepository {
     const sortDirection: 'asc' | 'desc' = query.sortDirection || 'desc';
 
     const filter = searchNameTerm
-      ? `(LOWER("name") like LOWER('%${searchNameTerm}%'))`
-      : '';
+      ? `"userId" = ${userId} AND (LOWER("name") like LOWER('%${searchNameTerm}%'))`
+      : `"userId" = ${userId}`;
 
     const offset = (pageNumber - 1) * pageSize;
 
@@ -94,18 +94,18 @@ export class BlogsQueryRepository {
       `
     SELECT "id", "name", "description", "websiteUrl", "createdAt", "isMembership"
     FROM public."Blogs"
-    WHERE "userId" = $1 ${filter}
+    WHERE ${filter}
     ORDER BY "${sortBy}" ${sortDirection}
-    OFFSET $2 LIMIT $3
+    OFFSET $1 LIMIT $2
   `,
-      [userId, offset, pageSize],
+      [offset, pageSize],
     );
 
     const totalCount = await this.dataSource.query(
       `
       SELECT count(*)
       FROM public."Blogs"
-      WHERE "userId" = $1 ${filter}
+      WHERE ${filter}
       `,
     );
 
