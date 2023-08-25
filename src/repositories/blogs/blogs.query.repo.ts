@@ -24,7 +24,7 @@ export class BlogsQueryRepository {
 
     let filter = '';
     if (searchNameTerm) {
-      filter = `LOWER("name") like LOWER('%${searchNameTerm}%')`;
+      filter = `(LOWER("name") like LOWER('%${searchNameTerm}%'))`;
     }
 
     const itemsForResponse = await this.dataSource.query(
@@ -64,7 +64,7 @@ export class BlogsQueryRepository {
 
     let filter = '';
     if (searchNameTerm) {
-      filter = `LOWER("name") like LOWER('%${searchNameTerm}%')`;
+      filter = `(LOWER("name") like LOWER('%${searchNameTerm}%'))`;
     }
 
     const itemsForResponse = await this.dataSource.query(
