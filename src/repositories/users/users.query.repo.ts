@@ -115,9 +115,9 @@ export class UsersQueryRepository {
   async findUserByLoginOrEmail(loginOrEmail: string) {
     const user = await this.dataSource.query(
       `
-    SELECT "id", "login", "email", "passwordHash", "createdAt", "confirmationCode", "codeExpirationDate", "isConfirmed", "isBanned", "banDate", "banReason"
-    FROM public."Users"
-    WHERE "login" = $1 OR "email" = $1
+        SELECT "id", "login", "email", "passwordHash", "createdAt", "confirmationCode", "codeExpirationDate", "isConfirmed", "isBanned", "banDate", "banReason"
+        FROM public."Users"
+        WHERE "login" = $1 OR "email" = $1
     `,
       [loginOrEmail],
     );
