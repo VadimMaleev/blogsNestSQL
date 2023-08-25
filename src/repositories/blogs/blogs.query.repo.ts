@@ -56,49 +56,26 @@ export class BlogsQueryRepository {
   }
 
   async getBlogsForUser(query: BlogsQueryDto, userId: string) {
-    // const searchNameTerm: string = query.searchNameTerm || '';
-    // const pageNumber: number = Number(query.pageNumber) || 1;
-    // const pageSize: number = Number(query.pageSize) || 10;
-    // const sortBy: string = query.sortBy || 'createdAt';
-    // const sortDirection: 'asc' | 'desc' = query.sortDirection || 'desc';
-    //
-    // let filter = '';
-    // if (searchNameTerm) {
-    //   filter = `(LOWER("name") like LOWER('%${searchNameTerm}%'))`;
-    // }
-    //
-    // const itemsForResponse = await this.dataSource.query(
-    //   `
-    //     SELECT "id", "name", "description", "websiteUrl", "createdAt", "isMembership"
-    //     FROM public."Blogs"
-    //     WHERE "userId" = $1 AND ${filter}
-    //     ORDER BY "${sortBy}" ${sortDirection}
-    //     OFFSET $2 LIMIT $3
-    //   `,
-    //   [userId, (pageNumber - 1) * pageSize, pageSize],
-    // );
-
     const searchNameTerm: string = query.searchNameTerm || '';
     const pageNumber: number = Number(query.pageNumber) || 1;
     const pageSize: number = Number(query.pageSize) || 10;
     const sortBy: string = query.sortBy || 'createdAt';
     const sortDirection: 'asc' | 'desc' = query.sortDirection || 'desc';
 
-    const filter = searchNameTerm
-      ? `"userId" = ${userId} AND (LOWER("name") like LOWER('%${searchNameTerm}%'))`
-      : `"userId" = ${userId}`;
-
-    const offset = (pageNumber - 1) * pageSize;
+    let filter = `"userId" = '${userId}'`;
+    if (searchNameTerm) {
+      filter += ` AND (LOWER("name") like LOWER('%${searchNameTerm}%'))`;
+    }
 
     const itemsForResponse = await this.dataSource.query(
       `
-    SELECT "id", "name", "description", "websiteUrl", "createdAt", "isMembership"
-    FROM public."Blogs"
-    WHERE ${filter}
-    ORDER BY "${sortBy}" ${sortDirection}
-    OFFSET $1 LIMIT $2
-  `,
-      [offset, pageSize],
+        SELECT "id", "name", "description", "websiteUrl", "createdAt", "isMembership"
+        FROM public."Blogs"
+        WHERE ${filter}
+        ORDER BY "${sortBy}" ${sortDirection}
+        OFFSET $1 LIMIT $2
+      `,
+      [(pageNumber - 1) * pageSize, pageSize],
     );
 
     const totalCount = await this.dataSource.query(
