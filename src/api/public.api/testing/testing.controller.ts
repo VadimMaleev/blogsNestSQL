@@ -14,6 +14,8 @@ export class TestingController {
       DELETE FROM public."RecoveryCodes";
       DELETE FROM public."Tokens";
       DELETE FROM public."Users";
+      DELETE FROM public."Blogs";
+      DELETE FROM public."Posts";
       `,
     );
     return true;
