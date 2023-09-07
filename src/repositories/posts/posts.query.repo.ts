@@ -151,6 +151,7 @@ export class PostsQueryRepository {
       FROM public."Posts"
       WHERE "blogId" = $1 AND "isVisible" = true
       `,
+      [blogId],
     );
 
     return {
