@@ -17,8 +17,8 @@ export class BlogsService {
 
   async createBlog(
     blog: BlogCreateInputModelType,
-    userId: string,
-    login: string,
+    // userId: string,
+    // login: string,
   ): Promise<BlogsForResponse> {
     const newBlog = new CreateBlogDto(
       uuidv4(),
@@ -27,8 +27,8 @@ export class BlogsService {
       blog.websiteUrl,
       new Date(),
       false,
-      userId,
-      login,
+      // userId,
+      // login,
       false,
     );
 
@@ -46,18 +46,18 @@ export class BlogsService {
   async updateBlog(
     id: string,
     inputModel: BlogCreateInputModelType,
-    userId: string,
+    //userId: string,
   ): Promise<boolean> {
     const blog = await this.blogsRepository.getBlogById(id);
     if (!blog) return false;
-    if (blog.userId !== userId) throw new HttpException('Not your own', 403);
+    //if (blog.userId !== userId) throw new HttpException('Not your own', 403);
     return this.blogsRepository.updateBlog(id, inputModel);
   }
 
-  async deleteBlog(id: string, userId: string): Promise<boolean> {
+  async deleteBlog(id: string /*userId: string*/): Promise<boolean> {
     const blog = await this.blogsRepository.getBlogById(id);
     if (!blog) return false;
-    if (blog.userId !== userId) throw new HttpException('Not your own', 403);
+    //if (blog.userId !== userId) throw new HttpException('Not your own', 403);
     return this.blogsRepository.deleteBlog(id);
   }
 

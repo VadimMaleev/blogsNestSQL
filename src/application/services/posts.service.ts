@@ -22,7 +22,7 @@ export class PostsService {
   async createPostForBlog(
     postInputModel: PostCreateFromBlogInputModelType,
     blog: BlogDocument,
-    userId: string,
+    // userId: string,
   ) {
     const newPost = new CreatePostDto(
       uuidv4(),
@@ -32,7 +32,7 @@ export class PostsService {
       blog.id,
       blog.name,
       new Date(),
-      userId,
+      // userId,
       true,
     );
     await this.postsRepository.createPost(newPost);
@@ -58,14 +58,14 @@ export class PostsService {
     postId: string,
     postInputModel: PostCreateFromBlogInputModelType,
     blogId: string,
-    userId: string,
+    // userId: string,
   ) {
     const blog: BlogDocument = await this.blogsRepository.getBlogById(blogId);
     const post: PostDocument = await this.postsRepository.getPostById(postId);
 
     if (!blog) throw new NotFoundException('Blog not found');
     if (!post) throw new NotFoundException('Post not Found');
-    if (post.userId !== userId) throw new HttpException('Not your own', 403);
+    //if (post.userId !== userId) throw new HttpException('Not your own', 403);
     return this.postsRepository.updatePost(postId, postInputModel);
   }
 

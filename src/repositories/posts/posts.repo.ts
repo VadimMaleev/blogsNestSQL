@@ -18,8 +18,8 @@ export class PostsRepository {
     await this.dataSource.query(
       `
         INSERT INTO public."Posts"(
-        "id", "title", "shortDescription", "content", "blogId", "blogName", "createdAt", "userId", "isVisible")
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9);
+        "id", "title", "shortDescription", "content", "blogId", "blogName", "createdAt", "isVisible")
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8);
       `,
       [
         newPost.id,
@@ -29,7 +29,7 @@ export class PostsRepository {
         newPost.blogId,
         newPost.blogName,
         newPost.createdAt,
-        newPost.userId,
+        // newPost.userId,
         newPost.isVisible,
       ],
     );
@@ -82,7 +82,7 @@ export class PostsRepository {
   async getPostById(id: string) {
     const post = await this.dataSource.query(
       `
-        SELECT "id", "title", "shortDescription", "content", "blogId", "blogName", "createdAt", "userId", "isVisible"
+        SELECT "id", "title", "shortDescription", "content", "blogId", "blogName", "createdAt", "isVisible"
         FROM public."Posts"
         WHERE "id" = $1
       `,

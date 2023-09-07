@@ -42,8 +42,8 @@ export class CreateBlogDto {
     public websiteUrl: string,
     public createdAt: Date,
     public isMembership: boolean,
-    public userId: string,
-    public login: string,
+    // public userId: string,
+    // public login: string,
     public isBanned: boolean,
   ) {}
 }
@@ -73,7 +73,7 @@ export class CreatePostDto {
     public blogId: string,
     public blogName: string,
     public createdAt: Date,
-    public userId: string,
+    // public userId: string,
     public isVisible: boolean,
   ) {}
 }

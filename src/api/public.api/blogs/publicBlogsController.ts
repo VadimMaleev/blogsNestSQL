@@ -5,12 +5,14 @@ import {
   Param,
   Query,
   Request,
+  UseGuards,
 } from '@nestjs/common';
 import { BlogsQueryRepository } from '../../../repositories/blogs/blogs.query.repo';
 import { BlogsQueryDto, PaginationDto } from '../../../types/dto';
 import { PostsQueryRepository } from '../../../repositories/posts/posts.query.repo';
 import { ExtractUserIdFromHeadersUseCase } from '../../../helpers/extract.userId.from.headers';
 import { BlogsRepository } from '../../../repositories/blogs/blogs.repo';
+import { BasicAuthGuard } from '../../../guards/basic.auth.guard';
 
 @Controller('blogs')
 export class PublicBlogsController {
@@ -39,12 +41,12 @@ export class PublicBlogsController {
     @Query() query: PaginationDto,
     @Request() req,
   ) {
-    let userId: string | null = null;
-    if (req.headers.authorization) {
-      userId = await this.extractUserIdFromHeadersUseCase.execute(req);
-    }
+    // let userId: string | null = null;
+    // if (req.headers.authorization) {
+    //   userId = await this.extractUserIdFromHeadersUseCase.execute(req);
+    // }
     const blog = await this.blogsRepository.getBlogById(id);
     if (!blog) throw new NotFoundException('Blog not found');
-    return this.postsQueryRepository.getPostsForBlog(blog.id, query, userId);
+    return this.postsQueryRepository.getPostsForBlog(blog.id, query /*userId*/);
   }
 }

@@ -121,7 +121,7 @@ export class BlogsQueryRepository {
 
     const items = await this.dataSource.query(
       `
-        SELECT "id", "name", "description", "websiteUrl", "createdAt", "isMembership", "userId", "login", "isBanned", "banDate"
+        SELECT "id", "name", "description", "websiteUrl", "createdAt", "isMembership", "isBanned", "banDate"
         FROM public."Blogs"
         WHERE ${nameFilter}
         ORDER BY "${sortBy}" ${sortDirection}

@@ -18,8 +18,8 @@ export class BlogsRepository {
     await this.dataSource.query(
       `
         INSERT INTO public."Blogs"(
-        "id", "name", "description", "websiteUrl", "createdAt", "isMembership", "userId", "login", "isBanned", "banDate")
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);
+        "id", "name", "description", "websiteUrl", "createdAt", "isMembership", "isBanned", "banDate")
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8);
     `,
       [
         newBlog.id,
@@ -28,8 +28,8 @@ export class BlogsRepository {
         newBlog.websiteUrl,
         newBlog.createdAt,
         newBlog.isMembership,
-        newBlog.userId,
-        newBlog.login,
+        // newBlog.userId,
+        // newBlog.login,
         newBlog.isBanned,
         null,
       ],
@@ -97,7 +97,7 @@ export class BlogsRepository {
   async getBlogById(id: string) {
     const blog = await this.dataSource.query(
       `
-        SELECT "id", "name", "description", "websiteUrl", "createdAt", "isMembership", "userId", "login", "isBanned", "banDate"
+        SELECT "id", "name", "description", "websiteUrl", "createdAt", "isMembership", "isBanned", "banDate"
         FROM public."Blogs"
         WHERE "id" = $1
       `,
