@@ -152,7 +152,9 @@ export class BlogsSAController {
   @HttpCode(204)
   @UseGuards(BasicAuthGuard)
   async deletePost(@Param() params: UriParamsForBloggersApi, @Request() req) {
-    const isDeleted = await this.postsService.deletePost(params, req.user.id);
+    const isDeleted = await this.postsService.deletePost(
+      params /*req.user.id*/,
+    );
     if (!isDeleted) throw new NotFoundException('Post not found');
     return isDeleted;
   }

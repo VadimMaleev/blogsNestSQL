@@ -39,7 +39,7 @@ export class PostsService {
     return plugForCreatingPosts(newPost);
   }
 
-  async deletePost(params: UriParamsForBloggersApi, userId: string) {
+  async deletePost(params: UriParamsForBloggersApi /*userId: string*/) {
     const blog: BlogDocument = await this.blogsRepository.getBlogById(
       params.blogId,
     );
@@ -49,7 +49,7 @@ export class PostsService {
 
     if (!blog) throw new NotFoundException('Blog not found');
     if (!post) throw new NotFoundException('Post not Found');
-    if (post.userId !== userId) throw new HttpException('Not your own', 403);
+    // if (post.userId !== userId) throw new HttpException('Not your own', 403);
 
     return this.postsRepository.deletePost(params.postId);
   }
