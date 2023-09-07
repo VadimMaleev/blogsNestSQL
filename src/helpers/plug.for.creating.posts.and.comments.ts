@@ -1,8 +1,6 @@
 import { CommentsForResponse, PostsForResponse } from '../types/types';
 
-export const plugForCreatingPosts = async (
-  post,
-): Promise<PostsForResponse> => ({
+export const plugForCreatingPosts = (post): PostsForResponse => ({
   id: post.id,
   title: post.title,
   shortDescription: post.shortDescription,
@@ -18,9 +16,7 @@ export const plugForCreatingPosts = async (
   },
 });
 
-export const plugForCreatingComment = async (
-  comment,
-): Promise<CommentsForResponse> => ({
+export const plugForCreatingComment = (comment): CommentsForResponse => ({
   id: comment.id,
   content: comment.content,
   commentatorInfo: {

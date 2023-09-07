@@ -1,13 +1,13 @@
 import { NewestLikes, PostsForResponse } from '../types/types';
 import { PostDocument } from '../repositories/posts/posts.schema';
 
-export const mapPostWithLikes = async (
+export const mapPostWithLikes = (
   post: PostDocument,
   likesCount: number,
   dislikeCount: number,
   myStatus: string,
   newestLikes: NewestLikes[],
-): Promise<PostsForResponse> => ({
+): PostsForResponse => ({
   id: post.id,
   title: post.title,
   shortDescription: post.shortDescription,
