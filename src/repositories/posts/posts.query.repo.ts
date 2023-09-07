@@ -31,6 +31,7 @@ export class PostsQueryRepository {
       [id],
     );
     if (!post[0]) return null;
+    console.log(post);
 
     // const likesCount = await this.likesRepository.likesCount(id);
     // const dislikeCount = await this.likesRepository.dislikeCount(id);
@@ -41,7 +42,7 @@ export class PostsQueryRepository {
     const myStatus = 'None';
     const newestLikes = [];
     return mapPostWithLikes(
-      post,
+      post[0],
       likesCount,
       dislikeCount,
       myStatus,
