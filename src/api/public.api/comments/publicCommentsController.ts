@@ -19,6 +19,7 @@ import {
   LikeStatusInputModel,
 } from '../../../types/input.models';
 import { ExtractUserIdFromHeadersUseCase } from '../../../helpers/extract.userId.from.headers';
+import { CommentsRepository } from '../../../repositories/comments/comments.repo';
 
 @Controller('comments')
 export class PublicCommentsController {
@@ -26,6 +27,7 @@ export class PublicCommentsController {
     protected commentsQueryRepository: CommentsQueryRepository,
     protected commentsService: CommentsService,
     protected extractUserIdFromHeadersUseCase: ExtractUserIdFromHeadersUseCase,
+    protected commentsRepository: CommentsRepository,
   ) {}
 
   @Get(':id')
@@ -41,7 +43,7 @@ export class PublicCommentsController {
   @HttpCode(204)
   @UseGuards(JwtAuthGuard)
   async deleteCommentById(@Param('id') id: string, @Request() req) {
-    const comment = await this.commentsQueryRepository.findCommentById(id);
+    const comment = await this.commentsRepository.findCommentById(id);
     if (!comment) throw new NotFoundException();
     if (comment.userId !== req.user.id)
       throw new HttpException('Not your own', 403);
@@ -58,7 +60,7 @@ export class PublicCommentsController {
     @Param('id') id: string,
     @Request() req,
   ) {
-    const comment = await this.commentsQueryRepository.findCommentById(id);
+    const comment = await this.commentsRepository.findCommentById(id);
     if (!comment) throw new NotFoundException();
     if (comment.userId !== req.user.id)
       throw new HttpException('Not your own', 403);
@@ -78,7 +80,7 @@ export class PublicCommentsController {
     @Param('id') id: string,
     @Request() req,
   ) {
-    const comment = await this.commentsQueryRepository.findCommentById(id);
+    const comment = await this.commentsRepository.findCommentById(id);
     if (!comment) throw new NotFoundException();
     const userId: string | null =
       await this.extractUserIdFromHeadersUseCase.execute(req);

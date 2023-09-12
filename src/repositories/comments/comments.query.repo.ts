@@ -72,10 +72,6 @@ export class CommentsQueryRepository {
     };
   }
 
-  async findCommentById(id: string): Promise<CommentDocument> {
-    return this.commentModel.findOne({ id: id });
-  }
-
   async findAllCommentsForBlogOwner(userId: string, query: PaginationDto) {
     const pageNumber: number = Number(query.pageNumber) || 1;
     const pageSize: number = Number(query.pageSize) || 10;
