@@ -3,10 +3,13 @@ import { Like, LikeDocument } from './likes.schema';
 import { Model } from 'mongoose';
 import { LikesStatusEnum, NewestLikes } from '../../types/types';
 import { v4 as uuidv4 } from 'uuid';
+import { InjectDataSource } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
 
 export class LikesRepository {
   constructor(
     @InjectModel(Like.name) private likesModel: Model<LikeDocument>,
+    @InjectDataSource() protected dataSource: DataSource,
   ) {}
 
   async likesCount(id: string): Promise<number> {
@@ -41,27 +44,36 @@ export class LikesRepository {
     login: string,
     likeStatus: string,
   ) {
-    const like: LikeDocument | undefined = await this.likesModel.findOne({
-      idOfEntity: id,
-      userId: userId,
-    });
-    if (!like) {
-      const likeOrUnlike = new this.likesModel({
-        id: uuidv4(),
-        idOfEntity: id,
-        userId: userId,
-        login: login,
-        addedAt: new Date(),
-        status: likeStatus,
-        isVisible: true,
-      });
-      await this.likesModel.insertMany(likeOrUnlike);
+    const like = await this.dataSource.query(
+      `
+        SELECT "id", "idOfEntity", "userId", "login", "addedAt", "status", "isVisible"
+        FROM public."Likes";
+        WHERE "idOfEntity" = $1 AND "userId" = $2
+      `,
+      [id, userId],
+    );
+
+    if (!like[0]) {
+      await this.dataSource.query(
+        `
+        INSERT INTO public."Likes"(
+        "id", "idOfEntity", "userId", "login", "addedAt", "status", "isVisible")
+        VALUES ($1, $2, $3, $4, $5, $6, $7);
+        `,
+        [uuidv4(), id, userId, login, new Date(), likeStatus, true],
+      );
     }
 
-    if (like && like.status !== likeStatus) {
-      like.status = likeStatus;
-      like.addedAt = new Date();
-      await like.save();
+    if (like[0] && like[0].status !== likeStatus) {
+      await this.dataSource.query(
+        `
+        UPDATE public."Likes"
+        SET  "status" = $1, 
+             "addedAt" = $2
+        WHERE "idOfEntity" = $3 AND "userId" = $4
+        `,
+        [likeStatus, new Date(), id, userId],
+      );
     }
     return true;
   }
