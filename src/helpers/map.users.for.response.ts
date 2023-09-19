@@ -5,9 +5,9 @@ export const mapUsersForResponse = (user): UsersForResponse => ({
   login: user.login,
   email: user.email,
   createdAt: user.createdAt,
-  banInfo: {
-    isBanned: user.isBanned,
-    banDate: user.banDate,
-    banReason: user.banReason,
-  },
+  // banInfo: {
+  //   isBanned: user.isBanned,
+  //   banDate: user.banDate,
+  //   banReason: user.banReason,
+  // },
 });
