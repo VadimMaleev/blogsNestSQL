@@ -46,7 +46,7 @@ export class CommentsQueryRepository {
         WHERE "idOfEntity" = $1 AND "userId" = $2
         ) as myStatus
         
-        FROM public."Comments" ;
+        FROM public."Comments"
         WHERE "id" = $1
       `,
       [id, userId],
