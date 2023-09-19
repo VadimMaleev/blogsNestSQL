@@ -1,7 +1,7 @@
 import { InjectModel } from '@nestjs/mongoose';
 import { Like, LikeDocument } from './likes.schema';
 import { Model } from 'mongoose';
-import { LikesStatusEnum, NewestLikes } from '../../types/types';
+import { NewestLikes } from '../../types/types';
 import { v4 as uuidv4 } from 'uuid';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
@@ -11,32 +11,6 @@ export class LikesRepository {
     @InjectModel(Like.name) private likesModel: Model<LikeDocument>,
     @InjectDataSource() protected dataSource: DataSource,
   ) {}
-
-  async likesCount(id: string): Promise<number> {
-    return this.likesModel.count({
-      idOfEntity: id,
-      status: 'Like',
-      isVisible: true,
-    });
-  }
-
-  async dislikeCount(id: string): Promise<number> {
-    return this.likesModel.count({
-      idOfEntity: id,
-      status: 'Dislike',
-      isVisible: true,
-    });
-  }
-
-  async getMyStatus(id: string, userId?: string | null): Promise<string> {
-    if (!userId) return LikesStatusEnum.None;
-    const likeOrDislike = await this.likesModel.findOne({
-      idOfEntity: id,
-      userId: userId,
-    });
-    if (!likeOrDislike) return LikesStatusEnum.None;
-    return likeOrDislike.status;
-  }
 
   async makeLikeOrUnlike(
     id: string,
