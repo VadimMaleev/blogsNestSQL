@@ -90,7 +90,7 @@ export class CommentsQueryRepository {
       `,
       [id, (pageNumber - 1) * pageSize, pageSize, userId],
     );
-    const commentsWithLikes = comments.map(mapCommentWithLikes(comments));
+    const commentsWithLikes = comments.map((i) => mapCommentWithLikes(i));
 
     const totalCount = await this.dataSource.query(
       `

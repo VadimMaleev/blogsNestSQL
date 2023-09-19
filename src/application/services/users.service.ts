@@ -59,11 +59,11 @@ export class UsersService {
       login: newUser.login,
       email: newUser.email,
       createdAt: newUser.createdAt,
-      banInfo: {
-        isBanned: newUser.isBanned,
-        banDate: newUser.banDate,
-        banReason: newUser.banReason,
-      },
+      // banInfo: {
+      //   isBanned: newUser.isBanned,
+      //   banDate: newUser.banDate,
+      //   banReason: newUser.banReason,
+      // },
     };
   }
 
