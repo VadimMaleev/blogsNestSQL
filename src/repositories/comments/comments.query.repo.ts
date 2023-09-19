@@ -34,17 +34,17 @@ export class CommentsQueryRepository {
         SELECT count (*)
         FROM public."Likes"
         WHERE "idOfEntity" = $1 AND "status" = 'Like'
-        ) as likesCount,
+        ) as "likesCount",
         (
         SELECT count (*)
         FROM public."Likes"
         WHERE "idOfEntity" = $1 AND "status" = 'Dislike'
-        ) as dislikesCount,
+        ) as "dislikesCount",
         (
         SELECT "status"
         FROM public."Likes"
         WHERE "idOfEntity" = $1 AND "userId" = $2
-        ) as myStatus
+        ) as "myStatus"
         
         FROM public."Comments"
         WHERE "id" = $1
