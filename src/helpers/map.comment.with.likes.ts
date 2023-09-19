@@ -9,8 +9,8 @@ export const mapCommentWithLikes = (comment): CommentsForResponse => ({
   },
   createdAt: comment.createdAt,
   likesInfo: {
-    likesCount: comment.likesCount,
-    dislikesCount: comment.dislikesCount,
+    likesCount: +comment.likesCount,
+    dislikesCount: +comment.dislikesCount,
     myStatus: comment.myStatus ? comment.myStatus : 'None',
   },
 });
