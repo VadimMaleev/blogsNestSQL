@@ -67,22 +67,22 @@ export class CommentsQueryRepository {
 
     const comments = await this.dataSource.query(
       `
-        SELECT c.*
+        SELECT c.*,
         (
         SELECT count (*)
-        FROM public."Likes"
-        WHERE c."id" = "idOfEntity" AND l."status" = 'Like'
-        ) as likesCount,
+        FROM public."Likes" l
+        WHERE c."id" = l."idOfEntity" AND l."status" = 'Like'
+        ) as "likesCount",
         (
         SELECT count (*)
-        FROM public."Likes"
-        WHERE c."id" = "idOfEntity" AND "status" = 'Dislike'
-        ) as dislikesCount,
+        FROM public."Likes" l
+        WHERE c."id" = l."idOfEntity" AND l."status" = 'Dislike'
+        ) as "dislikesCount",
         (
         SELECT "status"
-        FROM public."Likes"
-        WHERE c."id" = "idOfEntity" AND "userId" = $4
-        ) as myStatus
+        FROM public."Likes" l
+        WHERE c."id" = l."idOfEntity" AND l."userId" = $4
+        ) as "myStatus"
         
         FROM public."Comments" c
         WHERE "postId" = $1
