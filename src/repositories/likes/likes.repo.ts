@@ -21,7 +21,7 @@ export class LikesRepository {
     const like = await this.dataSource.query(
       `
         SELECT "id", "idOfEntity", "userId", "login", "addedAt", "status", "isVisible"
-        FROM public."Likes";
+        FROM public."Likes"
         WHERE "idOfEntity" = $1 AND "userId" = $2
       `,
       [id, userId],
