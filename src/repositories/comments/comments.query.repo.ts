@@ -51,6 +51,7 @@ export class CommentsQueryRepository {
       `,
       [id, userId],
     );
+    console.log(comment);
     return mapCommentWithLikes(comment[0]);
   }
 
