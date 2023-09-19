@@ -1,12 +1,6 @@
 import { CommentsForResponse } from '../types/types';
-import { CommentDocument } from '../repositories/comments/comments.shema';
 
-export const mapCommentWithLikes = async (
-  comment: CommentDocument,
-  likesCount: number,
-  dislikeCount: number,
-  myStatus: string,
-): Promise<CommentsForResponse> => ({
+export const mapCommentWithLikes = (comment): CommentsForResponse => ({
   id: comment.id,
   content: comment.content,
   commentatorInfo: {
@@ -15,8 +9,8 @@ export const mapCommentWithLikes = async (
   },
   createdAt: comment.createdAt,
   likesInfo: {
-    likesCount: likesCount,
-    dislikesCount: dislikeCount,
-    myStatus: myStatus,
+    likesCount: comment.likesCount,
+    dislikesCount: comment.dislikesCount,
+    myStatus: comment.myStatus ? comment.myStatus : 'None',
   },
 });

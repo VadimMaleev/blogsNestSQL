@@ -36,6 +36,8 @@ export class PublicCommentsController {
     if (req.headers.authorization) {
       userId = await this.extractUserIdFromHeadersUseCase.execute(req);
     }
+    const comment = await this.commentsRepository.findCommentById(id);
+    if (!comment) throw new NotFoundException('Comment not found');
     return this.commentsQueryRepository.getCommentById(id, userId);
   }
 

@@ -7,16 +7,19 @@ import { Model, PipelineStage } from 'mongoose';
 import { Comment, CommentDocument } from './comments.shema';
 import { mapCommentWithLikes } from '../../helpers/map.comment.with.likes';
 import { PaginationDto } from '../../types/dto';
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { LikesRepository } from '../likes/likes.repo';
 import { Post, PostDocument } from '../posts/posts.schema';
 import { mapCommentsForBlog } from '../../helpers/map.comments.for.Blog';
+import { InjectDataSource } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
 
 @Injectable()
 export class CommentsQueryRepository {
   constructor(
     @InjectModel(Comment.name) private commentModel: Model<CommentDocument>,
     @InjectModel(Post.name) private postModel: Model<PostDocument>,
+    @InjectDataSource() protected dataSource: DataSource,
     protected likesRepository: LikesRepository,
   ) {}
 
@@ -24,15 +27,31 @@ export class CommentsQueryRepository {
     id: string,
     userId: string | null,
   ): Promise<CommentsForResponse | null> {
-    const comment = await this.commentModel.findOne({
-      id: id,
-      isVisible: true,
-    });
-    if (!comment) throw new NotFoundException('Comment not found');
-    const likesCount = await this.likesRepository.likesCount(id);
-    const dislikeCount = await this.likesRepository.dislikeCount(id);
-    const myStatus = await this.likesRepository.getMyStatus(id, userId);
-    return mapCommentWithLikes(comment, likesCount, dislikeCount, myStatus);
+    const comment = await this.dataSource.query(
+      `
+        SELECT "id", "content", "userId", "userLogin", "createdAt", "postId", "isVisible",
+        (
+        SELECT count (*)
+        FROM public."Likes"
+        WHERE "idOfEntity" = $1 AND "status" = 'Like'
+        ) as likesCount,
+        (
+        SELECT count (*)
+        FROM public."Likes"
+        WHERE "idOfEntity" = $1 AND "status" = 'Dislike'
+        ) as dislikesCount,
+        (
+        SELECT "status"
+        FROM public."Likes"
+        WHERE "idOfEntity" = $1 AND "userId" = $2
+        ) as myStatus
+        
+        FROM public."Comments" ;
+        WHERE "id" = $1
+      `,
+      [id, userId],
+    );
+    return mapCommentWithLikes(comment[0]);
   }
 
   async getCommentsForPost(
@@ -45,30 +64,48 @@ export class CommentsQueryRepository {
     const sortBy: string = query.sortBy || 'createdAt';
     const sortDirection: 'asc' | 'desc' = query.sortDirection || 'desc';
 
-    const items = await this.commentModel
-      .find({ postId: id, isVisible: true })
-      .sort({ [sortBy]: sortDirection })
-      .skip((pageNumber - 1) * pageSize)
-      .limit(pageSize);
-
-    const itemsWithLikes = await Promise.all(
-      items.map(async (i) => {
-        const likesCount = await this.likesRepository.likesCount(i.id);
-        const dislikeCount = await this.likesRepository.dislikeCount(i.id);
-        const myStatus = await this.likesRepository.getMyStatus(i.id, userId);
-        const mappedForResponse: CommentsForResponse =
-          await mapCommentWithLikes(i, likesCount, dislikeCount, myStatus);
-        return mappedForResponse;
-      }),
+    const comments = await this.dataSource.query(
+      `
+        SELECT c.*
+        (
+        SELECT count (*)
+        FROM public."Likes"
+        WHERE c."id" = "idOfEntity" AND l."status" = 'Like'
+        ) as likesCount,
+        (
+        SELECT count (*)
+        FROM public."Likes"
+        WHERE c."id" = "idOfEntity" AND "status" = 'Dislike'
+        ) as dislikesCount,
+        (
+        SELECT "status"
+        FROM public."Likes"
+        WHERE c."id" = "idOfEntity" AND "userId" = $4
+        ) as myStatus
+        
+        FROM public."Comments" c
+        WHERE "postId" = $1
+        ORDER BY "${sortBy}" ${sortDirection}
+        OFFSET $2 LIMIT $3
+      `,
+      [id, (pageNumber - 1) * pageSize, pageSize, userId],
     );
+    const commentsWithLikes = comments.map(mapCommentWithLikes(comments));
+
+    const totalCount = await this.dataSource.query(
+      `
+      SELECT count(*)
+      FROM public."Comments"
+      WHERE "postId" = $1
+      `,
+    );
+
     return {
-      pagesCount: Math.ceil(
-        (await this.commentModel.count({ postId: id })) / pageSize,
-      ),
+      pagesCount: Math.ceil(+totalCount[0].count / pageSize),
       page: pageNumber,
       pageSize: pageSize,
-      totalCount: await this.commentModel.count({ postId: id }),
-      items: itemsWithLikes,
+      totalCount: +totalCount[0].count,
+      items: commentsWithLikes,
     };
   }
 
