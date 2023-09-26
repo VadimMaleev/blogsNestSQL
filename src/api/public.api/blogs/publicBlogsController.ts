@@ -41,12 +41,12 @@ export class PublicBlogsController {
     @Query() query: PaginationDto,
     @Request() req,
   ) {
-    // let userId: string | null = null;
-    // if (req.headers.authorization) {
-    //   userId = await this.extractUserIdFromHeadersUseCase.execute(req);
-    // }
+    let userId: string | null = null;
+    if (req.headers.authorization) {
+      userId = await this.extractUserIdFromHeadersUseCase.execute(req);
+    }
     const blog = await this.blogsRepository.getBlogById(id);
     if (!blog) throw new NotFoundException('Blog not found');
-    return this.postsQueryRepository.getPostsForBlog(blog.id, query /*userId*/);
+    return this.postsQueryRepository.getPostsForBlog(blog.id, query, userId);
   }
 }
