@@ -20,39 +20,40 @@ export class PostsQueryRepository {
 
   async getPostById(
     id: string,
-    // userId: string | null,
+    userId: string | null,
   ): Promise<PostsForResponse | null> {
     const post = await this.dataSource.query(
       `
-        SELECT "id", "title", "shortDescription", "content", "blogId", "blogName", "createdAt", "isVisible"
+        SELECT "id", "title", "shortDescription", "content", "blogId", "blogName", "createdAt", "isVisible",
+        (
+        SELECT count (*)
+        FROM public."Likes" 
+        WHERE "idOfEntity" = $1 AND "status" = 'Like'
+        ) as "likesCount",
+        (
+        SELECT count (*)
+        FROM public."Likes"
+        WHERE "idOfEntity" = $1 AND "status" = 'Dislike'
+        ) as "dislikesCount",
+        (
+        SELECT "status"
+        FROM public."Likes"
+        WHERE "idOfEntity" = $1 AND "userId" = $2
+        ) as "myStatus",
+        ARRAY (SELECT row_to_json(row) FROM (SELECT "addedAt", "userId", "login" FROM public."Likes" WHERE "idOfEntity" = $1 AND "status" = 'Like' ORDER BY "addedAt" DESC LIMIT 3) row) as "newestLikes"
         FROM public."Posts"
         WHERE "id" = $1 AND "isVisible" = true
       `,
-      [id],
+      [id, userId],
     );
     if (!post[0]) return null;
-    console.log(post);
 
-    // const likesCount = await this.likesRepository.likesCount(id);
-    // const dislikeCount = await this.likesRepository.dislikeCount(id);
-    // const myStatus = await this.likesRepository.getMyStatus(id, userId);
-    // const newestLikes = await this.likesRepository.getNewestLikes(id);
-    const likesCount = 0;
-    const dislikeCount = 0;
-    const myStatus = 'None';
-    const newestLikes = [];
-    return mapPostWithLikes(
-      post[0],
-      likesCount,
-      dislikeCount,
-      myStatus,
-      newestLikes,
-    );
+    return mapPostWithLikes(post[0]);
   }
 
   async getPosts(
     query: PaginationDto,
-    // userId: string | null,
+    userId: string | null,
   ): Promise<PostsPaginationResponse> {
     const pageNumber: number = Number(query.pageNumber) || 1;
     const pageSize: number = Number(query.pageSize) || 10;
@@ -61,33 +62,32 @@ export class PostsQueryRepository {
 
     const items = await this.dataSource.query(
       `
-        SELECT "id", "title", "shortDescription", "content", "blogId", "blogName", "createdAt", "isVisible"
-        FROM public."Posts"
+        SELECT p."id", p."title", p."shortDescription", p."content", p."blogId", p."blogName", p."createdAt", p."isVisible",
+        (
+        SELECT count (*)
+        FROM public."Likes" l
+        WHERE p."id" = l."idOfEntity" AND l."status" = 'Like'
+        ) as "likesCount",
+        (
+        SELECT count (*)
+        FROM public."Likes" l
+        WHERE p."id" = l."idOfEntity" AND l."status" = 'Dislike'
+        ) as "dislikesCount",
+        (
+        SELECT "status"
+        FROM public."Likes" l
+        WHERE p."id" = l."idOfEntity" AND l."userId" = $3
+        ) as "myStatus",
+        ARRAY (SELECT row_to_json(row) FROM (SELECT "addedAt", "userId", "login" FROM public."Likes" WHERE "idOfEntity" = p.id AND "status" = 'Like' ORDER BY "addedAt" DESC LIMIT 3) row) as "newestLikes"
+        FROM public."Posts" p
         WHERE "isVisible" = true
         ORDER BY "${sortBy}" ${sortDirection}
         OFFSET $1 LIMIT $2
       `,
-      [(pageNumber - 1) * pageSize, pageSize],
+      [(pageNumber - 1) * pageSize, pageSize, userId],
     );
 
-    const itemsWithLikes = items.map((i) => plugForCreatingPosts(i));
-
-    // const itemsWithLikes = await Promise.all(
-    //   items.map(async (i) => {
-    //     const likesCount = await this.likesRepository.likesCount(i.id);
-    //     const dislikeCount = await this.likesRepository.dislikeCount(i.id);
-    //     const myStatus = await this.likesRepository.getMyStatus(i.id, userId);
-    //     const newestLikes = await this.likesRepository.getNewestLikes(i.id);
-    //     const mappedForResponse: PostsForResponse = await mapPostWithLikes(
-    //       i,
-    //       likesCount,
-    //       dislikeCount,
-    //       myStatus,
-    //       newestLikes,
-    //     );
-    //     return mappedForResponse;
-    //   }),
-    // );
+    const itemsWithLikes = items.map((i) => mapPostWithLikes(i));
 
     const totalCount = await this.dataSource.query(
       `

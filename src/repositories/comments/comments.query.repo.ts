@@ -98,7 +98,8 @@ export class CommentsQueryRepository {
       SELECT count(*)
       FROM public."Comments"
       WHERE "postId" = $1
-      `, [id]
+      `,
+      [id],
     );
 
     return {

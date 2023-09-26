@@ -1,13 +1,6 @@
-import { NewestLikes, PostsForResponse } from '../types/types';
-import { PostDocument } from '../repositories/posts/posts.schema';
+import { PostsForResponse } from '../types/types';
 
-export const mapPostWithLikes = (
-  post,
-  likesCount: number,
-  dislikeCount: number,
-  myStatus: string,
-  newestLikes: NewestLikes[],
-): PostsForResponse => ({
+export const mapPostWithLikes = (post): PostsForResponse => ({
   id: post.id,
   title: post.title,
   shortDescription: post.shortDescription,
@@ -16,9 +9,9 @@ export const mapPostWithLikes = (
   blogName: post.blogName,
   createdAt: post.createdAt,
   extendedLikesInfo: {
-    likesCount: likesCount,
-    dislikesCount: dislikeCount,
-    myStatus: myStatus,
-    newestLikes: newestLikes,
+    likesCount: +post.likesCount,
+    dislikesCount: +post.dislikesCount,
+    myStatus: post.myStatus ? post.myStatus : 'None',
+    newestLikes: post.newestLikes,
   },
 });

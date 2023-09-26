@@ -41,22 +41,22 @@ export class PublicPostsController {
     id: string,
     @Request() req,
   ) {
-    // let userId: string | null = null;
-    // if (req.headers.authorization) {
-    //   userId = await this.extractUserIdFromHeadersUseCase.execute(req);
-    // }
-    const post = await this.postsQueryRepository.getPostById(id /*userId*/);
+    let userId: string | null = null;
+    if (req.headers.authorization) {
+      userId = await this.extractUserIdFromHeadersUseCase.execute(req);
+    }
+    const post = await this.postsQueryRepository.getPostById(id, userId);
     if (!post) throw new NotFoundException('Post not found');
     return post;
   }
 
   @Get()
   async getPosts(@Query() query: PaginationDto, @Request() req) {
-    // let userId: string | null = null;
-    // if (req.headers.authorization) {
-    //   userId = await this.extractUserIdFromHeadersUseCase.execute(req);
-    // }
-    return this.postsQueryRepository.getPosts(query /*userId*/);
+    let userId: string | null = null;
+    if (req.headers.authorization) {
+      userId = await this.extractUserIdFromHeadersUseCase.execute(req);
+    }
+    return this.postsQueryRepository.getPosts(query, userId);
   }
 
   @Get(':id/comments')
